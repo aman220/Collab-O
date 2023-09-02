@@ -1,6 +1,7 @@
 {
   "expo": {
     "name": "Collab-O",
+    "description": "Collabouative app",
     "slug": "Collab-O",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -21,10 +22,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.aman856.CollabO"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7e610c85-fd17-4d16-97c1-8ae8eece1006"
+      }
     }
   }
 }
