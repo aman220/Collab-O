@@ -99,7 +99,6 @@ const Home = React.memo(() => {
           ...doc.data(),
         }));
         setPosts(postsData);
-        console.log(postsData);
         setRefreshing(false); // Finish refreshing
       });
 
@@ -164,24 +163,21 @@ const Home = React.memo(() => {
       </View>
       <View>{userData && <Text>{userData.status}</Text>}</View>
 
-      {/* Render the FlatList */}
       <FlatList
         data={posts}
-        keyExtractor={(item) => item.id} // Use the post ID as the key
-        renderItem={({ item }) => (
-          console.log(item.text),
-          <Omeg
-            username={item.userfullName} // Update with your actual data fields
-            avtar={item.userfullavtar}
-            content={item.text}
-            image={item.imageUrl}
-          />
-        )}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => {
+          return (
+            <Omeg
+              username={item.userfullName}
+              avtar={item.userfullavtar}
+              content={item.text}
+              image={item.imageUrl}
+            />
+          );
+        }}
         refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh} // Call handleRefresh when pulling down to refresh
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       />
 

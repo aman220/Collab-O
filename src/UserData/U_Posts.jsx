@@ -3,15 +3,14 @@ import { SafeAreaView, Text, StyleSheet, View, ScrollView } from 'react-native';
 import COLORS from '../const/colors';
 import Omeg from '../Components/Omeg';
 import { firestore } from '../Firebase/firebase';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const U_Posts = () => {
   const [userPosts, setUserPosts] = useState([]);
-  const userID = '6g4kZMJrLLX9dXmzdAUgAipErfv1'; 
-
-
-  // Function to fetch user's posts based on post IDs in user_activity
+  
   const fetchUserPosts = async () => {
     try {
+      const userID = await AsyncStorage.getItem("@userUid");
       const userActivityRef = firestore.collection("users");
       const newRef = userActivityRef
         .doc(userID)

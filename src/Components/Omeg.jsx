@@ -1,4 +1,4 @@
-import React, { useState, useRef ,useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -6,6 +6,8 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
+  TextInput,
+  KeyboardAvoidingView,
 } from "react-native";
 import Font from "../const/Font";
 import LottieView from "lottie-react-native";
@@ -13,9 +15,7 @@ import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import COLORS from "../const/colors";
 import FontSize from "../const/FontSize";
 import RBSheet from "react-native-raw-bottom-sheet";
-
-
-
+import Comments from "./Comments";
 
 const VerifiedIcon = () => (
   <Image
@@ -92,10 +92,11 @@ const Omeg = ({ username, avtar, content, image }) => {
   const animationRef = useRef(null);
   const rbSheetRef = useRef(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
     if (rbSheetRef.current && isSheetOpen) {
-      rbSheetRef.current.open(); 
+      rbSheetRef.current.open();
     }
   }, [isSheetOpen]);
 
@@ -162,7 +163,7 @@ const Omeg = ({ username, avtar, content, image }) => {
           height={740} // Set the desired height of the bottom sheet
           openDuration={250}
           closeOnDragDown={true}
-          onClose={handleSheetClose} 
+          onClose={handleSheetClose}
           customStyles={{
             container: {
               borderTopLeftRadius: 20,
@@ -176,13 +177,29 @@ const Omeg = ({ username, avtar, content, image }) => {
               style={{
                 fontSize: FontSize.large,
                 color: COLORS.primary,
-                textAlign:"center",
+                textAlign: "center",
                 fontFamily: Font["poppins-bold"],
               }}
             >
               Comments
             </Text>
-            <View style={styles.sheetBody}></View>
+            <View style={styles.sheetBody}>
+              <Comments />
+              <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+                <View style={styles.WriteCommentContainer}>
+                  <TextInput
+                    placeholder="Write a comment..."
+                    style={styles.commentInput}
+                    value={comment}
+                    onChangeText={(text) => setComment(text)}
+                  />
+                  {/* Send button */}
+                  <TouchableOpacity style={styles.sendButton}>
+                    <Icon name="send" size={30} />
+                  </TouchableOpacity>
+                </View>
+              </KeyboardAvoidingView>
+            </View>
           </View>
         </RBSheet>
       </View>
@@ -341,7 +358,40 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   sheetBody: {
-    padding: 24,
+    width: "100%",
+    height: "100%",
+  },
+  WriteCommentContainer: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderTopWidth: 1,
+    borderColor: COLORS.gray,
+  },
+  commentInput: {
+    width: "100%",
+    // borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 25,
+    marginLeft: -25,
+    padding: 10,
+    backgroundColor: COLORS.gray,
+    // marginBottom: 8,
+  },
+  sendButton: {
+    backgroundColor: COLORS.gray, // Change to your desired button color
+    borderRadius: 50,
+    paddingVertical: 11,
+    paddingHorizontal: 11,
+    marginLeft: 5,
+    alignItems: "center",
+  },
+  sendButtonText: {
+    color: "white", // Change to your desired text color
+    fontSize: 16, // Change to your desired font size
+    fontFamily: Font["Poppins-Bold"], // Change to your desired font family
   },
 });
 
