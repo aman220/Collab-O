@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   SafeAreaView,
   View,
@@ -8,14 +8,24 @@ import {
   StyleSheet,
   TextInput,
   KeyboardAvoidingView,
+  RefreshControl,
+  FlatList,
 } from "react-native";
 import Font from "../const/Font";
 import LottieView from "lottie-react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import COLORS from "../const/colors";
 import FontSize from "../const/FontSize";
+import { useNavigation } from "@react-navigation/native";
 import RBSheet from "react-native-raw-bottom-sheet";
 import Comments from "./Comments";
+import { firestore, firebase, firebaseAuth } from "../Firebase/firebase";
+import Comment from "./Comments";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import ViewShot from "react-native-view-shot";
+import * as Sharing from "expo-sharing";
+import { BlurView } from "expo-blur";
+import { Audio, Video } from "expo-av";
 
 const VerifiedIcon = () => (
   <Image
@@ -54,6 +64,7 @@ const LikeButton = ({ onPress, active }) => {
         style={styles.animation}
         autoPlay={false}
         loop={false}
+        progress={15 / 68}
       />
     </TouchableOpacity>
   );
@@ -84,15 +95,60 @@ const AvatarGroup = () => {
   );
 };
 
-const Omeg = ({ username, avtar, content, image }) => {
+const Omeg = ({
+  username,
+  avtar,
+  content,
+  image,
+  postId,
+  userId,
+  CommentCou,
+  video,
+  whoami,
+  isverified,
+}) => {
   const [likeCount, setLikeCount] = useState(0);
   const [commentCount, setCommentCount] = useState(0);
   const [shareCount, setShareCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
-  const animationRef = useRef(null);
   const rbSheetRef = useRef(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
+  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
+  const [commentcontent, setCommentText] = useState("");
+  const [currentavatar, setAvatar] = useState(null);
+  const [currentusername, setUsername] = useState(null);
+  const [currentcollege, setCollege] = useState(null);
+  const [currentwhoami, setwhoami] = useState(null);
+  const navigation = useNavigation();
+  const viewShotRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(true);
+
+  const fetchUserData = useCallback(async () => {
+    const uid = await AsyncStorage.getItem("@userUid");
+    if (uid) {
+      const userRef = firestore.collection("users").doc(uid);
+      userRef.get().then((doc) => {
+        if (doc.exists) {
+          const userData = doc.data();
+          setAvatar(userData.avatar);
+          setUsername(userData.fullName);
+          setCollege(userData.College);
+          setwhoami(userData.whoami);
+          console.log(userData);
+        } else {
+          console.log("User data not found in Firestore");
+        }
+      });
+    } else {
+      // No user is signed in
+      console.log("No user is signed in");
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUserData();
+  }, [fetchUserData]);
 
   useEffect(() => {
     if (rbSheetRef.current && isSheetOpen) {
@@ -111,44 +167,181 @@ const Omeg = ({ username, avtar, content, image }) => {
 
   const handleComment = () => {
     setCommentCount(commentCount + 1);
-    setIsSheetOpen(true); // Open the sheet when clicking the comment button
+    setIsSheetOpen(true);
   };
 
-  const handleShare = () => {
-    setShareCount(shareCount + 1);
+  const handleShare = async () => {
+    try {
+      const uri = await viewShotRef.current.capture();
+      const isAvailable = await Sharing.isAvailableAsync();
+
+      if (isAvailable) {
+        await Sharing.shareAsync(uri);
+      } else {
+        console.log("Sharing is not available on this device");
+      }
+    } catch (error) {
+      console.error("Error sharing image:", error);
+    }
   };
 
   const handleSheetClose = () => {
-    setIsSheetOpen(false); // Reset the state variable when sheet is closed
+    setIsSheetOpen(false);
+  };
+
+  const fetchComments = async (postId) => {
+    try {
+      const commentsRef = firestore
+        .collection("posts")
+        .doc(postId)
+        .collection("CommentData");
+
+      const snapshot = await commentsRef.get();
+      // console.log(snapshot)
+      if (snapshot.empty) {
+        console.log("No comments found.");
+        setComments([]);
+      } else {
+        const commentsData = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setComments(commentsData);
+        console.log(commentsData);
+      }
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
+
+  const addCommentToFirebase = async (postId, commentData) => {
+    try {
+      const commentsRef = firestore
+        .collection("posts")
+        .doc(postId)
+        .collection("CommentData");
+      const newCommentRef = await commentsRef.add(commentData);
+      // Retrieve the current CommentCount from the post document
+      const postRef = firestore.collection("posts").doc(postId);
+      const postDoc = await postRef.get();
+
+      if (postDoc.exists) {
+        const postData = postDoc.data();
+
+        // Increment the CommentCount and update it in the post document
+        const updatedCommentCount = (postData.CommentCount || 0) + 1;
+        await postRef.update({ CommentCount: updatedCommentCount });
+      } else {
+        console.log("Post not found in Firestore");
+      }
+    } catch (error) {
+      console.error("Error adding comment: ", error);
+    }
+  };
+
+  const handleCommentSubmit = () => {
+    const commentData = {
+      avtar: currentavatar,
+      username: currentusername,
+      Content: commentcontent,
+      College: currentcollege,
+      Whoami: currentwhoami,
+    };
+    setCommentText("");
+    addCommentToFirebase(postId, commentData);
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  };
+
+  const renderVideo = () => {
+    if (video) {
+      return (
+        <Video
+          source={{ uri: video }}
+          rate={1.0}
+          volume={1.0}
+          isMuted={isMuted}
+          resizeMode="cover"
+          shouldPlay={true}
+          isLooping={true}
+          style={styles.selectedVideo}
+        />
+      );
+    }
+    return null;
+  };
+  const toggleMute = () => {
+    setIsMuted((prevMuted) => !prevMuted); // Toggle mute state
+  };
+
+  const [containerHeight, setContainerHeight] = useState(0); // Initialize the container height state
+
+  // ... other code ...
+
+  const handleLayout = (event) => {
+    // Get the height of the container when the layout changes
+    // const { height } = event.nativeEvent.layout;
+    // setContainerHeight(height);
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.profileContainer}>
+    // <ViewShot ref={viewShotRef} options={{ format: "jpg", quality: 1.0 }}>
+    <SafeAreaView style={styles.container} onLayout={handleLayout}>
+      <View>
         <Image source={{ uri: avtar }} style={styles.profileImage} />
-        <View style={styles.verticalLine} />
+        <View
+          style={{
+            borderWidth: 1,
+            borderColor: COLORS.gray,
+            marginTop: 5,
+            alignSelf: "center",
+            marginRight: 10,
+            height: containerHeight,
+            width: 1,
+          }}
+        ></View>
       </View>
-
-      {/* <Image source={{ uri: image }} style={styles.profileImage} /> */}
       <View style={styles.tweetContent}>
-        <View style={styles.userInfo}>
+        <TouchableOpacity
+          style={styles.userInfo}
+          onPress={() => navigation.navigate("myprofile", { userId })}
+        >
           <View style={styles.usernameContainer}>
             <Text style={styles.username}>{username}</Text>
-            <VerifiedIcon />
+            {isverified == true && <VerifiedIcon />}
           </View>
-          <View style={styles.whiamiContainer}>
-            <Text style={styles.whoamitext}>Student</Text>
+          <View style={styles.whoamiContainer}>
+            <Text style={styles.whoamitext}>{whoami}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
         <Text style={styles.tweetText}>{content}</Text>
-        <View style={styles.postImageContainer}>
-          <Image source={{ uri: image }} style={styles.postImage} />
-        </View>
+
+        {image ? (
+          <View style={styles.postImageContainer}>
+            <Image source={{ uri: image }} style={styles.postImage} />
+          </View>
+        ) : null}
+
+        {video ? (
+          <View style={styles.postImageContainer}>
+            {renderVideo()}
+            <TouchableOpacity style={styles.speakerIcon} onPress={toggleMute}>
+              <Icon name={isMuted ? "volume-off" : "volume-high"} size={30} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        {/* Bottom Of a Post */}
         <View style={styles.buttonsContainer}>
           <LikeButton onPress={handleLike} />
           <TouchableOpacity style={styles.buttonCount} onPress={handleComment}>
             <Icon name="comment-text-outline" size={20} />
-            <Text>{commentCount}</Text>
+            <Text>{CommentCou}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.buttonCount} onPress={handleShare}>
             <Icon name="share-outline" size={25} />
@@ -156,14 +349,15 @@ const Omeg = ({ username, avtar, content, image }) => {
           </TouchableOpacity>
           <AvatarGroup />
         </View>
-        {/* Render Image Component here  */}
 
+        {/* Render Image Component here  */}
         <RBSheet
           ref={rbSheetRef}
-          height={740} // Set the desired height of the bottom sheet
+          height={740}
           openDuration={250}
           closeOnDragDown={true}
           onClose={handleSheetClose}
+          onOpen={() => fetchComments(postId)}
           customStyles={{
             container: {
               borderTopLeftRadius: 20,
@@ -184,17 +378,47 @@ const Omeg = ({ username, avtar, content, image }) => {
               Comments
             </Text>
             <View style={styles.sheetBody}>
-              <Comments />
-              <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+              <FlatList
+                data={comments}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => {
+                  return (
+                    <Comment
+                      username={item.username}
+                      avtar={item.avtar}
+                      content={item.Content}
+                      college={currentcollege}
+                      whoami={currentwhoami}
+                    />
+                  );
+                }}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={handleRefresh}
+                  />
+                }
+                ListEmptyComponent={
+                  <Text style={styles.noCommentText}>No comment found</Text>
+                }
+              />
+
+              <KeyboardAvoidingView
+                style={{ marginBottom: 20 }}
+                behavior="padding"
+              >
                 <View style={styles.WriteCommentContainer}>
                   <TextInput
                     placeholder="Write a comment..."
                     style={styles.commentInput}
-                    value={comment}
-                    onChangeText={(text) => setComment(text)}
+                    value={comments}
+                    onChangeText={(text) => setCommentText(text)}
                   />
                   {/* Send button */}
-                  <TouchableOpacity style={styles.sendButton}>
+                  <TouchableOpacity
+                    style={styles.sendButton}
+                    onPress={handleCommentSubmit}
+                  >
                     <Icon name="send" size={30} />
                   </TouchableOpacity>
                 </View>
@@ -204,6 +428,7 @@ const Omeg = ({ username, avtar, content, image }) => {
         </RBSheet>
       </View>
     </SafeAreaView>
+    // </ViewShot>
   );
 };
 
@@ -213,17 +438,18 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
+    backgroundColor: COLORS.white,
   },
   profileContainer: {
-    flexDirection: "column", // Align profile image and line horizontally
-    alignItems: "center", // Align profile image and line vertically
+    flexDirection: "column",
+    alignItems: "center",
     marginRight: 10,
   },
   profileImage: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    // marginRight: 10,
+    marginRight: 10,
   },
   tweetContent: {
     flex: 1,
@@ -303,10 +529,12 @@ const styles = StyleSheet.create({
   verticalLine: {
     borderWidth: 1,
     borderColor: COLORS.gray,
-    height: 400,
-    marginTop: 5, // Vertical line extends to the full height of profile container
+    marginTop: 5,
+    alignSelf: "center",
+    marginRight: 10,
+    width: 1,
   },
-  whiamiContainer: {
+  whoamiContainer: {
     backgroundColor: COLORS.grey, // Customize the background color
     borderRadius: 20, // Customize the border radius
     paddingHorizontal: 10,
@@ -392,6 +620,20 @@ const styles = StyleSheet.create({
     color: "white", // Change to your desired text color
     fontSize: 16, // Change to your desired font size
     fontFamily: Font["Poppins-Bold"], // Change to your desired font family
+  },
+  noCommentText: {
+    fontSize: 16,
+    color: "gray",
+    textAlign: "center",
+    marginTop: 200,
+    fontFamily: Font["Cantarell-regular"],
+  },
+  selectedVideo: {
+    width: "80%",
+    height: 300,
+    borderRadius: 8,
+    position: "absolute",
+    right: 10,
   },
 });
 

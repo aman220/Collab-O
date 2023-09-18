@@ -2,10 +2,8 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import COLORS from "./const/colors";
-import U_Posts from "./UserData/U_Posts";
-import U_Media from "./UserData/U_Media";
-import U_activity from "./UserData/U_activity";
-
+import CollegeNoti from "./Screens/Notification/CollegeNoti";
+import GlobalNoti from "./Screens/Notification/GlobalNoti";
 const TabButton = ({ label, isActive, onPress }) => (
   <TouchableOpacity
     style={[styles.button, isActive && styles.activeButton]}
@@ -19,9 +17,9 @@ const TabButton = ({ label, isActive, onPress }) => (
 
 const Tab = createBottomTabNavigator();
 
-const UserTabs = ({ userId }) => {
-  const [activeTab, setActiveTab] = useState("Post");
-
+const NotificTabs = () => {
+  
+  const [activeTab, setActiveTab] = useState("campus");
   const handleTabPress = (tabName) => {
     setActiveTab(tabName);
   };
@@ -31,26 +29,20 @@ const UserTabs = ({ userId }) => {
       <View style={styles.buttonsContainer}>
         <View style={styles.innerbuttonContainer}>
           <TabButton
-            label="Post"
-            isActive={activeTab === "Post"}
-            onPress={() => handleTabPress("Post")}
+            label="Campus"
+            isActive={activeTab === "campus"}
+            onPress={() => handleTabPress("campus")}
           />
           <TabButton
-            label="Media"
-            isActive={activeTab === "Media"}
-            onPress={() => handleTabPress("Media")}
-          />
-          <TabButton
-            label="Activity"
-            isActive={activeTab === "Activity"}
-            onPress={() => handleTabPress("Activity")}
+            label="Global"
+            isActive={activeTab === "global"}
+            onPress={() => handleTabPress("global")}
           />
         </View>
       </View>
       <View style={styles.tabContentContainer}>
-        {activeTab === "Post" && <U_Posts userId={userId} />}
-        {activeTab === "Media" && <U_Media />}
-        {activeTab === "Activity" && <U_activity />}
+        {activeTab === "campus" && <CollegeNoti/>}
+        {activeTab === "Media" && <GlobalNoti/>}
       </View>
     </View>
   );
@@ -62,7 +54,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     width: "100%",
-    marginTop: 20,
     paddingVertical: 10,
     backgroundColor: COLORS.lightPrimary,
   },
@@ -100,4 +91,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default UserTabs;
+export default NotificTabs;

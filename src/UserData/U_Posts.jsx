@@ -5,15 +5,16 @@ import Omeg from '../Components/Omeg';
 import { firestore } from '../Firebase/firebase';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const U_Posts = () => {
+
+const U_Posts = ({ userId }) => {
   const [userPosts, setUserPosts] = useState([]);
   
   const fetchUserPosts = async () => {
     try {
-      const userID = await AsyncStorage.getItem("@userUid");
+      
       const userActivityRef = firestore.collection("users");
       const newRef = userActivityRef
-        .doc(userID)
+        .doc(userId)
         .collection("userdata")
         .doc("user_activity");
         const userActivityDoc = await newRef.get();
@@ -78,11 +79,10 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
   header: {
-    padding: 20,
+    // padding: 20,
     flexDirection: 'column',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 25,
   },
 });
 

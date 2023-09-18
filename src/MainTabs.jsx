@@ -84,7 +84,6 @@ const MainTabs = () => {
 const tabBarStyle = StyleSheet.create({
   ShadowRoot: {
     shadowColor: '#7F5DF0',
-    // #7F5DF0
     shadowOffset: {
       width: 0,
       height: 10,

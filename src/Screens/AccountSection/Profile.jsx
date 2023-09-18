@@ -214,7 +214,7 @@ class Profile extends Component {
               height: USER_TABS_HEIGHT,
             }}
           > */}
-          <UserTabs />
+          <UserTabs userId={userId}/>
           {/* </Animated.View> */}
 
           <View style={{ height: 1000 }} />

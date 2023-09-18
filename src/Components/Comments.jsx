@@ -5,7 +5,7 @@ import COLORS from "../const/colors"; // Import should be in lowercase "colors".
 import FontSize from "../const/FontSize";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
-const Comment = () => {
+const Comment = ({username,avtar,whoami,content,college}) => {
   const [showReplies, setShowReplies] = useState(false);
 
   if (Platform.OS === "android") {
@@ -44,12 +44,6 @@ const Comment = () => {
           Nice but you have to do some improvement in this project sir but by
           the way it's nice{" "}
         </Text>
-        {/* <View style={styles.buttonsContainer}>
-          <TouchableOpacity style={{flexDirection:"row" }}>
-            <Icon name="message-reply-text" size={20} />
-            <Text style={{marginLeft:5 ,fontFamily:Font['poppins-regular'] , color:COLORS.grey}}>Reply</Text>
-          </TouchableOpacity>
-        </View> */}
       </View>
     </View>
   );
@@ -62,7 +56,7 @@ const Comment = () => {
     <View style={styles.container}>
       <View style={styles.profileContainer}>
         <Image
-          source={require("../assets/photo.jpg")}
+          source={{ uri: avtar }}
           style={styles.profileImage}
         />
       </View>
@@ -70,17 +64,16 @@ const Comment = () => {
         <View style={styles.userInfo}>
           <View style={styles.usernameContainer}>
             <Text style={styles.username}>
-              Aman Raj Singh <VerifiedIcon />
+            {username} <VerifiedIcon />
             </Text>
-            <Text style={styles.college}>GLA University</Text>
+            <Text style={styles.college}>{college}</Text>
           </View>
           <View style={styles.whiamiContainer}>
-            <Text style={styles.whoamitext}>Student</Text>
+            <Text style={styles.whoamitext}>{whoami}</Text>
           </View>
         </View>
         <Text style={styles.commentText}>
-          Nice but you have to do some improvement in this project sir but by
-          the way it's nice{" "}
+        {content}{" "}
         </Text>
         <View style={styles.buttonsContainer}>
           <TouchableOpacity style={{ flexDirection: "row" }}>
@@ -148,20 +141,20 @@ const styles = StyleSheet.create({
   },
   commentText: {
     fontSize: 16,
-    fontFamily: Font["Cantarell-regular"], // Check if the font name is correctly defined in your "Font" module.
+    fontFamily: Font["Cantarell-regular"],
   },
   whiamiContainer: {
-    backgroundColor: COLORS.grey, // Customize the background color
-    borderRadius: 20, // Customize the border radius
+    backgroundColor: COLORS.grey, 
+    borderRadius: 20, 
     paddingHorizontal: 10,
     paddingVertical: 2,
     justifyContent: "center",
     alignSelf: "center",
   },
   whoamitext: {
-    fontFamily: Font["poppins-regular"], // Check if the font name is correctly defined in your "Font" module.
+    fontFamily: Font["poppins-regular"], 
     fontSize: FontSize.small,
-    color: COLORS.white, // Customize the text color
+    color: COLORS.white, 
   },
   CommentContent: {
     flex: 1,
@@ -173,14 +166,14 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   usernameContainer: {
-    flexDirection: "column", // Make sure username and VerifiedIcon are in the same row
-    // alignItems: "center",
+    flexDirection: "column", 
+  
     marginBottom: 5,
   },
   username: {
     fontWeight: "bold",
     marginRight: 5,
-    fontFamily: Font["poppins-bold"], // Check if the font name is correctly defined in your "Font" module.
+    fontFamily: Font["poppins-bold"], 
     fontSize: FontSize.medium,
   },
   handle: {
@@ -188,7 +181,7 @@ const styles = StyleSheet.create({
   },
   CommentText: {
     fontSize: 16,
-    fontFamily: Font["Cantarell-regular"], // Check if the font name is correctly defined in your "Font" module.
+    fontFamily: Font["Cantarell-regular"], 
   },
   verifiedIcon: {
     width: 25,
@@ -204,7 +197,7 @@ const styles = StyleSheet.create({
   },
   replyContainer: {
     flexDirection: "row",
-    padding: 5,
+    padding: 0,
     borderBottomColor: "#ccc",
     marginTop: 20,
   },
@@ -212,7 +205,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.gray,
     height: 100,
-    marginTop: 5, // Vertical line extends to the full height of profile container
+    marginTop: 5,
   },
 });
 

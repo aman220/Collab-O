@@ -117,7 +117,7 @@ const AddProfile = ({ route }) => {
         <View style={styles.loaderContainer}>
           <View style={styles.loaderContent}>
             <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loaderText}>Signing In...</Text>
+            <Text style={styles.loaderText}>uploading...</Text>
             
           </View>
         </View>

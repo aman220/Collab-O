@@ -10,6 +10,8 @@ import {
   View,
   FlatList,
   RefreshControl,
+  Animated,
+  ScrollView,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 const { height } = Dimensions.get("window");
@@ -22,6 +24,10 @@ import Spacing from "../const/Spacing";
 import Font from "../const/Font";
 import FontSize from "../const/FontSize";
 import Omeg from "../Components/Omeg";
+import { Toast } from "react-native-toast-message/lib/src/Toast";
+import OmegSkeleton from "./Skeleton/OmegSkeleton";
+import OmegCardPrimary from "./Skeleton/OmegCardPrimary";
+import showToast from "../const/Toast";
 
 const Home = React.memo(() => {
   const [userData, setUserData] = useState(null);
@@ -30,6 +36,7 @@ const Home = React.memo(() => {
   const [Selected, setSelected] = React.useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [posts, setPosts] = useState([]);
+  const [isSkeletonLoading, setSekeletonIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchUserData = useCallback(async () => {
@@ -38,20 +45,22 @@ const Home = React.memo(() => {
       if (uid != null) {
         setIsLoading(true);
         const userRef = firestore.collection("users").doc(uid);
-        const userSnapshot = await userRef.get();
-        if (userSnapshot.exists) {
-          const userData = userSnapshot.data();
-          setUserData(userData);
-        } else {
-          console.log("User data not found!");
-        }
+
+        // Add a real-time listener
+        userRef.onSnapshot((docSnapshot) => {
+          if (docSnapshot.exists) {
+            const userData = docSnapshot.data();
+            setUserData(userData);
+            setIsLoading(false);
+          } else {
+            showToast("error", "UserData Not Found!");
+          }
+        });
       } else {
         console.log("User not logged in.");
       }
     } catch (error) {
       console.log("Error fetching user data:", error);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
@@ -90,9 +99,8 @@ const Home = React.memo(() => {
   // Fetch posts from Firestore
   const fetchPosts = async () => {
     try {
+      setSekeletonIsLoading(true);
       const postsRef = firestore.collection("posts");
-
-      // Listen for real-time updates
       const unsubscribe = postsRef.onSnapshot((snapshot) => {
         const postsData = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -100,8 +108,8 @@ const Home = React.memo(() => {
         }));
         setPosts(postsData);
         setRefreshing(false); // Finish refreshing
+        setSekeletonIsLoading(false)
       });
-
       return unsubscribe;
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -126,12 +134,28 @@ const Home = React.memo(() => {
     fetchPosts(); // Fetch posts again
   };
 
+  const handleViewPost = (postId) => {
+    // Get the currently authenticated user's UID
+    const userId = firebase.auth().currentUser.uid;
+
+    // Reference to the Firebase Realtime Database
+    const database = firebase.database();
+
+    // Reference to the "postViews" node
+    const postViewsRef = database.ref("postViews");
+
+    // Update the post's view information
+    postViewsRef.child(postId).child(userId).set(true);
+  };
+  const sortedPosts = posts.sort((a, b) => b.createdAt - a.createdAt);
+  const reversedPosts = [...sortedPosts].reverse();
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={style.header}>
-        <TouchableOpacity>
-          <Icon name="sort-variant" size={28} />
+        <TouchableOpacity onPress={() => navigation.navigate("notification")}>
+          <Icon name="bell-ring-outline" size={25} />
         </TouchableOpacity>
+        <Toast />
         {isLoading ? ( // Render skeleton content when loading
           <View style={style.skeletonContainer}>
             <View style={style.skeletonText} />
@@ -161,25 +185,49 @@ const Home = React.memo(() => {
           </>
         )}
       </View>
-      <View>{userData && <Text>{userData.status}</Text>}</View>
+      <View style={{ marginBottom: -20 }}>
+        {userData && <Text>{userData.status}</Text>}
+      </View>
 
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
-          return (
-            <Omeg
-              username={item.userfullName}
-              avtar={item.userfullavtar}
-              content={item.text}
-              image={item.imageUrl}
-            />
-          );
-        }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
-        }
-      />
+      <View>
+        
+        {isSkeletonLoading ? (
+          <View style={{ marginTop: 10 ,marginVertical:10,}}>
+             <OmegCardPrimary/>
+            <OmegSkeleton></OmegSkeleton>
+            <OmegCardPrimary/>
+          </View>
+
+        ) : (
+          <FlatList
+            data={reversedPosts}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => {
+              return (
+                <Omeg
+                  username={item.userfullName}
+                  avtar={item.userfullavtar}
+                  content={item.text}
+                  image={item.imageUrl}
+                  postId={item.id}
+                  CommentCou={item.CommentCount}
+                  userId={item.userId}
+                  video={item.videoUrl}
+                  timestap={item.createdAt}
+                  whoami={item.whoami}
+                  isverified={item.isverified}
+                />
+              );
+            }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+              />
+            }
+          />
+        )}
+      </View>
 
       {/* Bottom sheet code  */}
       <RBSheet
@@ -207,7 +255,7 @@ const Home = React.memo(() => {
           </Text>
           <View style={style.sheetBody}>
             <View style={style.sheetBodyOptions}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={[
                   style.sheetBodyOption,
                   Selected === 0 && { borderColor: "#000" },
@@ -224,7 +272,7 @@ const Home = React.memo(() => {
                   }}
                 ></Image>
                 {/* color={Selected === 0 ? "#000" : "#bcddd9"} */}
-                <Text
+              {/* <Text
                   style={[
                     style.stylebodyoptiontext,
                     Selected === 0 && { color: "#000" },
@@ -232,7 +280,7 @@ const Home = React.memo(() => {
                 >
                   Alumani
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity
                 style={[
@@ -336,30 +384,6 @@ const style = StyleSheet.create({
     borderTopRightRadius: 40,
     paddingHorizontal: 20,
     paddingVertical: 40,
-  },
-  searchInputContainer: {
-    height: 50,
-    backgroundColor: COLORS.white,
-    borderRadius: 7,
-    paddingHorizontal: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  categoryBtn: {
-    height: 50,
-    width: 50,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.white,
-    borderRadius: 10,
-  },
-  categoryBtnName: {
-    color: COLORS.dark,
-    fontSize: 10,
-    marginTop: 5,
-    fontWeight: "bold",
   },
 
   sheetBody: {

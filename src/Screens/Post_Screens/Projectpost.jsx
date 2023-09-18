@@ -28,7 +28,7 @@ import {
 } from "react-native-dropdown-select-list";
 import { firestore, storage } from "../../Firebase/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const Projectpost = () => {
   const [projectTitle, setProjectTitle] = useState("");
@@ -47,6 +47,9 @@ const Projectpost = () => {
   const [isImageSelected, setIsImageSelected] = useState(false);
   const [isProjectStatusVisible, setIsProjectStatusVisible] = useState(false);
   const navigation = useNavigation();
+
+  const route = useRoute();
+  const { useravtar, username } = route.params;
 
   const opengithubModal = () => {
     setIsgithubModalVisible(true);
@@ -201,6 +204,8 @@ const Projectpost = () => {
         githubLink: projectLink,
         createdAt: currentDate.toISOString(),
         isApproved: false,
+        username: username,
+        avtar: useravtar,
       });
 
       // Upload the image to Firebase Storage if an image is selected
@@ -424,13 +429,13 @@ const Projectpost = () => {
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
-            <Text style={styles.modalText}>🚀
-              Your project submission request has been forwarded to your
+            <Text style={styles.modalText}>
+              🚀 Your project submission request has been forwarded to your
               designated college,{"\n"}
               <Text style={{ fontWeight: "bold" }}>{selectedCollege}</Text>.
               {"\n"}A dedicated mentor will thoroughly review and verify your
-              project, ensuring that any instances of plagiarism are
-              identified and addressed.
+              project, ensuring that any instances of plagiarism are identified
+              and addressed.
             </Text>
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity

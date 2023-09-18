@@ -19,6 +19,10 @@ import U_Media from './src/UserData/U_Media';
 import U_Posts from './src/UserData/U_Posts';
 import Upload from './src/Screens/Upload';
 import Projectpost from './src/Screens/Post_Screens/Projectpost';
+import ResearchPost from './src/Screens/Post_Screens/ResearchPost';
+import BidReqest from './src/Screens/BidRequests/BidReqest';
+import Channels from './src/Screens/Discussion/Channels';
+import Notifications from './src/Screens/Notification/Notifications';
 
 const Stack = createStackNavigator();
 
@@ -103,6 +107,28 @@ export default function App() {
           component={Projectpost}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="researchpost"
+          component={ResearchPost}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="bidrequest"
+          component={BidReqest}
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="Channels"
+          component={Channels}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="notification"
+          component={Notifications}
+          options={{ headerShown: false }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

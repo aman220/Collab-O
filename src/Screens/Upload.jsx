@@ -22,6 +22,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { firebase, firestore, storage } from "../Firebase/firebase";
 import { useNavigation } from "@react-navigation/native";
 import RBSheet from "react-native-raw-bottom-sheet";
+import { Audio, Video } from "expo-av";
+import { Camera } from "expo-camera";
 
 const Upload = () => {
   const [userData, setUserData] = useState(null);
@@ -36,6 +38,14 @@ const Upload = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const rbSheetRef = useRef(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [cameraRef, setCameraRef] = useState(null);
+  const [videoUri, setVideoUri] = useState(null);
+  const [isVideoPreviewVisible, setIsVideoPreviewVisible] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [whoami, setUserwhoami] = useState("");
+  const [isverified, setUserIsVerified] = useState(false);
+
 
   useEffect(() => {
     setTextLength(postText.length);
@@ -63,6 +73,8 @@ const Upload = () => {
           setUserData(userData);
           setUsername(userData.fullName);
           setUseravtar(userData.avatar);
+          setUserwhoami(userData.whoami)
+          setUserIsVerified(userData.isverified);
         } else {
           console.log("User data not found!");
         }
@@ -123,11 +135,52 @@ const Upload = () => {
     }
   };
 
+  const handleVideoPicker = async () => {
+    try {
+      const cameraPermission = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA
+      );
+      const audioPermission = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.RECORD_AUDIO
+      );
+
+      if (
+        cameraPermission === PermissionsAndroid.RESULTS.GRANTED &&
+        audioPermission === PermissionsAndroid.RESULTS.GRANTED
+      ) {
+        const options = {
+          mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 1,
+        };
+
+        try {
+          const result = await ImagePicker.launchImageLibraryAsync(options);
+
+          if (!result.canceled) {
+            setVideoUri(result.uri);
+            setIsVideoPreviewVisible(true);
+          }
+        } catch (error) {
+          console.log("ImagePicker Error: ", error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        console.log("Camera and audio permissions denied");
+      }
+    } catch (err) {
+      console.warn(err);
+    }
+  };
+
   const handlePostButtonPress = async () => {
     try {
       setIsLoading(true);
       // Upload the image to Firebase Storage if an image is selected
       let imageUrl = null;
+      let VideoUrl = null;
       if (selectedImage) {
         const response = await fetch(selectedImage);
         const blob = await response.blob();
@@ -140,6 +193,20 @@ const Upload = () => {
         // Get the image URL from Firebase Storage
         imageUrl = await ref.getDownloadURL();
       }
+      if (videoUri) {
+        // Upload the video to Firebase Storage
+        const response = await fetch(videoUri);
+        const blob = await response.blob();
+        const uid = await AsyncStorage.getItem("@userUid");
+        const userId = uid; // Update this with your user ID logic
+        const videoName = `videos/${userId}_${Date.now()}.mp4`; // Change 'videos' to your desired storage path
+        const ref = storage.ref().child(videoName);
+        await ref.put(blob);
+
+        // Get the video URL from Firebase Storage
+        VideoUrl= await ref.getDownloadURL();
+        setVideoUri(videoUri);
+      }
 
       // Create a new post document in Firestore
       const usersCollectionRef = firestore.collection("posts");
@@ -150,9 +217,12 @@ const Upload = () => {
         userId: uid, // Update this with your user ID logic
         text: postText,
         imageUrl: imageUrl,
-        userfullName:username,
-        userfullavtar:useravtar,
+        videoUrl : VideoUrl,
+        userfullName: username,
+        userfullavtar: useravtar,
         createdAt: currentDate.toISOString(),
+        whoami : whoami,
+        isverified:isverified,
       });
 
       // Update the user's activity collection
@@ -189,13 +259,50 @@ const Upload = () => {
     }
   };
 
-
   const openBottomSheet = () => {
     if (rbSheetRef.current) {
       rbSheetRef.current.open();
     }
   };
-  
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      await cameraRef.stopRecording();
+      setIsRecording(false);
+    } else {
+      const videoRecordPromise = cameraRef.recordAsync();
+      videoRecordPromise
+        .then((data) => {
+          setVideoUri(data.uri);
+          setIsVideoPreviewVisible(true);
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+      setIsRecording(true);
+    }
+  };
+
+  const renderVideo = () => {
+    if (videoUri) {
+      return (
+        <Video
+          source={{ uri: videoUri }}
+          rate={1.0}
+          volume={1.0}
+          isMuted={isMuted}
+          resizeMode="cover"
+          shouldPlay={true}
+          isLooping={true}
+          style={styles.selectedVideo}
+        />
+      );
+    }
+    return null;
+  };
+  const toggleMute = () => {
+    setIsMuted((prevMuted) => !prevMuted); // Toggle mute state
+  };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -264,6 +371,19 @@ const Upload = () => {
         </View>
       )}
 
+      {videoUri && (
+        <View style={styles.selectedImageContainer}>
+          {renderVideo()}
+          <TouchableOpacity style={styles.speakerIcon} onPress={toggleMute}>
+            <Icon
+              name={isMuted ? "speaker-off" : "speaker"}
+              size={30}
+              // color="white"
+            />
+          </TouchableOpacity>
+        </View>
+      )}
+
       <View style={styles.containerBottom}>
         {/* Icon */}
         <TouchableOpacity
@@ -272,13 +392,19 @@ const Upload = () => {
         >
           <Icon name="image-outline" size={30} color={COLORS.primary} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconContainer}>
+        <TouchableOpacity
+          style={styles.iconContainer}
+          onPress={handleVideoPicker}
+        >
           <Icon name="video" size={30} color={COLORS.primary} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.iconContainer}>
           <Icon name="file-gif-box" size={30} color={COLORS.primary} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.iconContainer} onPress={openBottomSheet}>
+        <TouchableOpacity
+          style={styles.iconContainer}
+          onPress={openBottomSheet}
+        >
           <Icon name="dots-horizontal" size={30} color={COLORS.primary} />
         </TouchableOpacity>
         <View>
@@ -313,8 +439,9 @@ const Upload = () => {
       {/* Bottom sheet code  */}
       <RBSheet
         ref={rbSheetRef}
-        height={440} 
-        openDuration={250}
+        height={440}
+        openDuration={150}
+        animationType="fade"
         closeOnDragDown={true}
         customStyles={{
           container: {
@@ -323,7 +450,6 @@ const Upload = () => {
           },
         }}
       >
-        
         <View style={styles.mainContainer}>
           <Text
             style={{
@@ -336,8 +462,11 @@ const Upload = () => {
           </Text>
           <View style={styles.sheetBody}>
             <View style={styles.sheetBodyOptions}>
-              <TouchableOpacity style={styles.sheetBodyOption}  onPress={() => navigation.navigate("projectpost")}>
-              <Image
+              <TouchableOpacity
+                style={styles.sheetBodyOption}
+                onPress={() => navigation.navigate("projectpost" ,{useravtar , username})}
+              >
+                <Image
                   source={require("../assets/project.png")}
                   style={{
                     width: 70,
@@ -347,8 +476,11 @@ const Upload = () => {
                 <Text style={styles.stylebodyoptiontext}>Project</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.sheetBodyOption}>
-              <Image
+              <TouchableOpacity
+                style={styles.sheetBodyOption}
+                onPress={() => navigation.navigate("researchpost")}
+              >
+                <Image
                   source={require("../assets/research.png")}
                   style={{
                     width: 70,
@@ -533,11 +665,30 @@ const styles = StyleSheet.create({
     fontSize: FontSize.medium,
     marginTop: 20,
     textAlign: "center",
-    color:COLORS.primary
+    color: COLORS.primary,
   },
   skeletonContainer: {
     flexDirection: "row",
     alignItems: "center",
+  },
+  selectedVideo: {
+    width: "80%",
+    height: 300,
+    borderRadius: 8,
+    position: "absolute",
+    right: 10,
+  },
+  selectedVideo: {
+    width: "80%",
+    height: 300,
+    borderRadius: 8,
+    position: "absolute",
+    right: 10,
+  },
+  speakerIcon: {
+    position: "absolute",
+    bottom: 10,
+    right: 10,
   },
 });
 

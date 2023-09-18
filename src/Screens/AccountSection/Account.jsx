@@ -189,14 +189,14 @@ const Account = () => {
           style={{ backgroundColor: COLORS.light, height: 2, marginBottom: 10 }}
         ></View>
 
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Channels")}>
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
             }}
           >
-            <Text style={styles.cardText}>Features</Text>
+            <Text style={styles.cardText}>Discussion Forums</Text>
             <Image
               source={require("../../assets/afeatures.png")}
               style={styles.verifiedIcon}
