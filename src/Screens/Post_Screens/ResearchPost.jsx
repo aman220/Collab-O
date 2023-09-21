@@ -13,6 +13,8 @@ import COLORS from "../../const/colors";
 import Font from "../../const/Font";
 import FontSize from "../../const/FontSize";
 import Spacing from "../../const/Spacing";
+import { firestore } from "../../Firebase/firebase";
+
 
 const ResearchPost = () => {
   const [projectTitle, setProjectTitle] = useState("");
@@ -64,9 +66,39 @@ const ResearchPost = () => {
     setProgressStatus(text);
   };
 
-  const handleSubmit = () => {
-    // Implement submission logic here
-    // You can send the data to a server, update state, or perform other actions.
+  const handleSubmit = async () => {
+    try {
+      // Check if required fields are empty
+      if (!projectTitle || !abstract || !authors.length || !progressStatus) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      // Create a new document in the 'research_posts' collection in Firestore
+      await firestore.collection("research_posts").add({
+        projectTitle,
+        abstract,
+        authors,
+        keywords,
+        methodology,
+        progressStatus,
+        //timestamp: firestore.FieldValue.serverTimestamp(), // Add a timestamp
+      });
+
+      // Clear the form fields
+      setProjectTitle("");
+      setAbstract("");
+      setAuthorsInput("");
+      setAuthors([]);
+      setKeywords("");
+      setMethodology("");
+      setProgressStatus("");
+
+      alert("Research post submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting research post:", error);
+      alert("An error occurred while submitting the research post.");
+    }
   };
 
   return (

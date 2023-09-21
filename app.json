@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Collab-O",
-    "description": "Collabouative app",
+    "description": "Collaborative app",
     "slug": "Collab-O",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -23,6 +23,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "permissions": ["CAMERA", "RECORD_AUDIO"],
       "package": "com.aman856.CollabO"
     },
     "web": {
@@ -32,6 +33,14 @@
       "eas": {
         "projectId": "7e610c85-fd17-4d16-97c1-8ae8eece1006"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(Collab-O) to access your camera."
+        }
+      ]
+    ]
   }
 }

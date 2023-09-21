@@ -208,12 +208,13 @@ const Account = () => {
         ></View>
 
         {/* omega verified */}
-        <TouchableOpacity>
+        <TouchableOpacity  onPress={() => navigation.navigate("verifyidentity")}>
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
             }}
+           
           >
             <Text style={styles.cardText}>Omega Verified</Text>
             <Image

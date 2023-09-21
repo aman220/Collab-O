@@ -62,7 +62,7 @@ class Profile extends Component {
     // Now you can extract userId from route.params
     const { userId } = route.params;
     // const [userData, setUserData] = useState(null);
-    console.log("main profile ke aandr", userId);
+   
     const { userData } = this.state;
     console.log(userData);
 

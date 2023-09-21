@@ -49,7 +49,7 @@ const Projectpost = () => {
   const navigation = useNavigation();
 
   const route = useRoute();
-  const { useravtar, username } = route.params;
+  const { useravtar, username , whoami } = route.params;
 
   const opengithubModal = () => {
     setIsgithubModalVisible(true);
@@ -206,6 +206,8 @@ const Projectpost = () => {
         isApproved: false,
         username: username,
         avtar: useravtar,
+        whoami : whoami,
+
       });
 
       // Upload the image to Firebase Storage if an image is selected

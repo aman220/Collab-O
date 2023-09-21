@@ -23,6 +23,10 @@ import ResearchPost from './src/Screens/Post_Screens/ResearchPost';
 import BidReqest from './src/Screens/BidRequests/BidReqest';
 import Channels from './src/Screens/Discussion/Channels';
 import Notifications from './src/Screens/Notification/Notifications';
+import ProjectExpandScreen from './src/Screens/ExpandScreens/ProjectExpandScreen';
+import Verification from './src/Screens/Verification/Verification';
+import NotificatiomExpand from './src/Screens/ExpandScreens/NotificationExpand';
+import NotificationExpand from './src/Screens/ExpandScreens/NotificationExpand';
 
 const Stack = createStackNavigator();
 
@@ -128,7 +132,21 @@ export default function App() {
           component={Notifications}
           options={{ headerShown: false }}
         />
-
+        <Stack.Screen
+          name="projectexpand"
+          component={ProjectExpandScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="verifyidentity"
+          component={Verification}
+          options={{ headerShown: false }}
+        />
+         <Stack.Screen
+          name="Notificationexpand"
+          component={NotificationExpand}
+          options={{ headerShown: false }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

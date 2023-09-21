@@ -1,26 +1,33 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  SafeAreaView,
+  TouchableOpacity,
+} from "react-native";
 import Font from "../const/Font";
 import COLORS from "../const/colors";
+import { useNavigation } from "@react-navigation/native";
 
-const Notification = () => {
+const Notification = ({ whyjoin, name, college, avtar }) => {
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.container}>
       <Image
-        source={require("../assets/photo.jpg")} // Replace with the actual image URL
+        source={{ uri: avtar }} // Replace with the actual image URL
         style={styles.userImage}
       />
-      <View style={styles.noticontent}>
+
+      <TouchableOpacity style={styles.noticontent} onPress={() => navigation.navigate("Notificationexpand")}>
         <View style={styles.userInfo}>
-          <Text style={styles.username}>Aman Raj Singh</Text>
-          <Text style={styles.userCollege}>Gla University</Text>
+          <Text style={styles.username}>{name}</Text>
+          <Text style={styles.userCollege}>{college}</Text>
         </View>
 
-        <Text style={styles.messageText}>
-          Hii I want to Coloubourate With you I have a Five Year of exprience in
-          this Filed
-        </Text>
-      </View>
+        <Text style={styles.messageText}>{whyjoin}</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
@@ -32,6 +39,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
     backgroundColor: COLORS.white,
+    elevation: 5,
+    borderRadius: 5,
   },
   profileContainer: {
     flexDirection: "row",
@@ -58,7 +67,7 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 16,
     fontFamily: Font["Cantarell-regular"],
-    marginTop:10,
+    marginTop: 10,
   },
   noticontent: {
     flex: 1,

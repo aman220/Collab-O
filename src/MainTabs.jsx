@@ -20,13 +20,10 @@ const MainTabs = () => {
         headerShown: false,
         tabBarStyle: {
           position: 'absolute',
-          bottom: 23,
-          left: 20,
-          right: 20,
-          elevation: 0,
+          elevation: 5,
           backgroundColor: '#ffffff',
           borderRadius: 15,
-          height: 80,
+          height: 70,
           ...tabBarStyle.ShadowRoot,
         },
       }}

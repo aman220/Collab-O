@@ -1,4 +1,4 @@
-import React, { useState} from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,8 @@ import {
   ScrollView,
   StyleSheet,
   SafeAreaView,
-  Button, // Import Button from React Native
+  Button,
+  Modal,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import COLORS from "../../const/colors";
@@ -18,48 +19,95 @@ import { useNavigation, useRoute } from "@react-navigation/native";
 import { firestore } from "../../Firebase/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-
 const BidReqest = () => {
-
   const route = useRoute();
   const { postid, userid, userName, title } = route.params;
-  console.log(postid, userid, userName, title);
-
   const [abstract, setAbstract] = useState("");
   const [name, setName] = useState("");
   const [linkedinValue, setLinkedinValue] = useState("");
+  const [userData, setUserData] = useState({});
+  const [isProjectStatusVisible, setIsProjectStatusVisible] = useState(false);
+  const [isSubmitDisabled, setIsSubmitDisabled] = useState(false);
+  const [uaid, setUaid] = useState("");
+
+  const validateFields = () => {
+    // Check if any of the required fields are empty
+    const fieldsAreEmpty = abstract.trim() === "" || name.trim() === "";
+    setIsSubmitDisabled(fieldsAreEmpty);
+  };
 
   const handleAbstractChange = (text) => {
     setAbstract(text);
+    validateFields();
   };
 
-  const handleNameChange = (text) => { // Function to handle Name input change
+  const handleNameChange = (text) => {
+    // Function to handle Name input change
     setName(text);
+    validateFields();
   };
 
   const handleLinkedinChange = (text) => {
     setLinkedinValue(text);
   };
 
-  const handleSendRequest = async () => {
-    const notificationCollectionRef = firestore.collection("Requests");
-    const uid = await AsyncStorage.getItem("@userUid"); // Assuming you have the user's UID stored
-    const currentDate = new Date();
+  const openProjectModal = () => {
+    setIsProjectStatusVisible(true);
+  };
 
+  const closeProjectModal = () => {
+    setIsProjectStatusVisible(false);
+  };
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const uid = await AsyncStorage.getItem("@userUid");
+      setUaid(uid);
+      try {
+        const userDoc = await firestore.collection("users").doc(uid).get();
+        if (userDoc.exists) {
+          setUserData(userDoc.data());
+        } else {
+          console.log("User not found in Firestore");
+        }
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      }
+    };
+
+    fetchUserData(); // Call the function to fetch user data
+  }, [userid]); // Trigger the effect when the userid changes
+
+  const avtarValue = userData.avatar || null;
+  const college = userData.college || null;
+
+  const handleSendRequest = async () => {
+    const uaid = await AsyncStorage.getItem("@userUid");
+    if (uaid === userid) {
+      openProjectModal();
+      return;
+    }
+    if (abstract.trim() === "" || name.trim() === "") {
+      console.log("Please fill in all required fields.");
+      return;
+    }
+    const notificationCollectionRef = firestore.collection("Requests");
+    const uid = await AsyncStorage.getItem("@userUid");
+    const currentDate = new Date();
     try {
-      
       await notificationCollectionRef.add({
         name: name,
-        whyJoin: abstract, 
-        linkedin: linkedinValue, 
+        whyJoin: abstract,
+        linkedin: linkedinValue,
         senderId: uid,
-        reciverId:userid,
-        postid:postid,
+        reciverId: userid,
+        postid: postid,
         createdAt: currentDate.toISOString(),
+        avtar: avtarValue,
+        college: college,
       });
 
       console.log("Notification sent successfully!");
-      // Handle success or navigate to another screen
     } catch (error) {
       console.error("Error sending notification: ", error);
       // Handle errors
@@ -100,22 +148,22 @@ const BidReqest = () => {
           }}
         >
           {title}
-      </Text>
+        </Text>
         <Text style={{ textAlign: "right", marginRight: 5, marginTop: 20 }}>
           By {userName}
         </Text>
       </View>
       <Text
-          style={{
-            fontFamily: Font["poppins-semiBold"],
-            fontSize: FontSize.large,
-            maxWidth: "98%",
-            textAlign: "center",
-            marginTop: 25,
-          }}
-        >
-          Your message ...
-        </Text>
+        style={{
+          fontFamily: Font["poppins-semiBold"],
+          fontSize: FontSize.large,
+          maxWidth: "98%",
+          textAlign: "center",
+          marginTop: 25,
+        }}
+      >
+        Your message ...
+      </Text>
       <View style={styles.contentContainer}>
         <TextInput
           placeholder="Name" // Name input placeholder
@@ -131,16 +179,64 @@ const BidReqest = () => {
           numberOfLines={5}
           onChangeText={handleAbstractChange}
         />
-         <TextInput
+        <TextInput
           placeholder="Share Linkedin (optional)"
           placeholderTextColor={COLORS.dark}
           style={styles.inputField}
           onChangeText={handleLinkedinChange}
         />
-         <TouchableOpacity style={styles.submitButton} onPress={handleSendRequest}>
+        <TouchableOpacity
+          style={[styles.submitButton, { opacity: isSubmitDisabled ? 0.5 : 1 }]}
+          onPress={handleSendRequest}
+          disabled={isSubmitDisabled}
+        >
           <Text style={styles.submitButtonText}>Submit</Text>
         </TouchableOpacity>
       </View>
+
+      {/* this modal will be open when user click on post button */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isProjectStatusVisible}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            {uaid === userid ? (
+              <>
+                <Text style={styles.modalText}>
+                  You cannot send Collaboration request on your own project.
+                </Text>
+                <View style={styles.modalButtonContainer}>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={closeProjectModal}
+                  >
+                    <Text style={styles.modalButtonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.modalText}>
+                  🚀 Your project Collaboration request has been forwarded to
+                  your Selected Project Owner,{"\n"}
+                  <Text style={{ fontWeight: "bold" }}>{userName}</Text>.{"\n"}
+                  Will Update Shortly...
+                </Text>
+                <View style={styles.modalButtonContainer}>
+                  <TouchableOpacity
+                    style={styles.modalButton}
+                    onPress={handleSendRequest}
+                  >
+                    <Text style={styles.modalButtonText}>Yes</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -195,6 +291,43 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: COLORS.white,
     fontFamily: Font["poppins-semiBold"],
+    fontSize: FontSize.medium,
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 10,
+    backgroundColor: COLORS.primary,
+  },
+  modalButtonText: {
+    color: COLORS.white,
+    fontFamily: Font["poppins-regular"],
+    fontSize: FontSize.medium,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    padding: 20,
+    width: "80%",
+    alignItems: "center",
+    elevation: 5, // Add elevation for a card-like effect
+  },
+  modalText: {
+    marginBottom: 20,
+    textAlign: "center",
+    fontFamily: Font["poppins-regular"],
     fontSize: FontSize.medium,
   },
 });

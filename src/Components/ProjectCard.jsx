@@ -12,6 +12,7 @@ const LikeButton = ({ onPress, active }) => {
     const [isLiked, setIsLiked] = useState(false);
     const animationRef = useRef(null);
     const isFirstrun = useRef(true);
+    const navigation = useNavigation();
   
     const handlePress = () => {
       if (isFirstrun.current) {
@@ -115,7 +116,7 @@ const ProjectCard = (props) => {
   return (
     <View style={styles.cardContainer}>
       <Image source={{ uri: avtar }} style={styles.avatar} />
-      <View style={styles.container}>
+      <View style={styles.container} >
         <View style={styles.header}>
           <View style={styles.userInfoContainer}>
             <View style={styles.userInfo}>
@@ -131,7 +132,7 @@ const ProjectCard = (props) => {
             </View>
 
             <View style={styles.whoamiContainer}>
-              {whoami && <Text style={styles.whoamitext}>{whoami}</Text>}
+              {whoami && <Text style={styles.whoamitext} >{whoami}</Text>}
             </View>
           </View>
         </View>
@@ -145,7 +146,7 @@ const ProjectCard = (props) => {
             ))}
         </View>
 
-        {title && <Text style={styles.title}>{title}</Text>}
+        {title && <Text style={styles.title}onPress={() => navigation.navigate("projectexpand" ,{postid , navigation,userid,title,userName})}>{title}</Text>}
 
         {description && (
           <View>
@@ -179,7 +180,7 @@ const ProjectCard = (props) => {
               <Text>2</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.footerIcon} onPress={() => navigation.navigate("bidrequest" ,{postid,userid,userName,title})}>
+          <TouchableOpacity style={styles.footerIcon} >
             <Image
               source={require("../assets/collaboration.png")}
               style={{width:25,height:25}}
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginTop: 20,
+    marginTop: 10,
   },
   userName: {
     color: COLORS.black,

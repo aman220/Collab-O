@@ -16,6 +16,7 @@ import ProjectCard from "../Components/ProjectCard";
 import { firestore } from "../Firebase/firebase";
 import COLORS from "../const/colors";
 import ProjectSkeleton from "./Skeleton/ProjectSkeleton";
+import ProjectTabs from "../ProjectTabs";
 
 const Search = ({ username, useravtar }) => {
   const [searchText, setSearchText] = useState("");
@@ -23,20 +24,11 @@ const Search = ({ username, useravtar }) => {
   const [projects, setProjects] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [isSkeletonLoading, setSkeletonIsLoading] = useState(true);
+  const [showProjectTabs, setShowProjectTabs] = useState(false);
 
-  useEffect(() => {
-    const unsubscribe = firestore
-      .collection("projects")
-      .onSnapshot((snapshot) => {
-        const projectsArray = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setProjects(projectsArray);
-        setSkeletonIsLoading(false); 
-      });
-    return () => unsubscribe();
-  }, []);
+ 
+
+
 
   const handleSearch = () => {
     console.log("Searching for:", searchText);
@@ -95,7 +87,7 @@ const Search = ({ username, useravtar }) => {
               <Icon name="close-circle" size={20} color={COLORS.grey} />
             </TouchableOpacity>
           )}
-          <TouchableOpacity>
+          <TouchableOpacity >
             <FeatherIcon name="filter" size={20} color={COLORS.grey} />
           </TouchableOpacity>
         </Animated.View>
@@ -124,31 +116,8 @@ const Search = ({ username, useravtar }) => {
         </View>
       </ScrollView>
       {/* Project Cards */}
-      <FlatList
-        data={isSkeletonLoading ? [{ id: "skeleton" }] : projects}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) =>
-          isSkeletonLoading ? (
-            <ProjectSkeleton />
-          ) : (
-            <ProjectCard
-              title={item.title}
-              description={item.description}
-              userName={item.username}
-              avtar={item.avtar}
-              collegeName={item.college}
-              timeStamp={item.createdAt}
-              whoami={item.whoami}
-              techStack={item.technologies}
-              proimage={item.imageUrl}
-              postid={item.id}
-              userid={item.userId}
-            />
-          )
-        }
-        showsVerticalScrollIndicator={false}
-        style={style.projectCardsContainer}
-      />
+
+       <ProjectTabs />
     </SafeAreaView>
   );
 };
