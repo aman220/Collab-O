@@ -22,10 +22,7 @@ import collegesData from "../../data/colleges.json";
 import LottieView from "lottie-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { PermissionsAndroid } from "react-native";
-import {
-  MultipleSelectList,
-  SelectList,
-} from "react-native-dropdown-select-list";
+import { MultipleSelectList } from "react-native-dropdown-select-list";
 import { firestore, storage } from "../../Firebase/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -35,6 +32,8 @@ const Projectpost = () => {
   const [projectLink, setProjectLink] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
   const [projectTechnologies, setProjectTechnologies] = useState("");
+  const [projectteam, setProjectteam] = useState("");
+  const [projectrequest, setProjectrequest] = useState("");
   const [titleCharacterCount, setTitleCharacterCount] = useState(0);
   const [descriptionCharacterCount, setDescriptionCharacterCount] = useState(0);
   const [titleInputFocused, setTitleInputFocused] = useState(false);
@@ -47,9 +46,14 @@ const Projectpost = () => {
   const [isImageSelected, setIsImageSelected] = useState(false);
   const [isProjectStatusVisible, setIsProjectStatusVisible] = useState(false);
   const navigation = useNavigation();
+  const [collegeOptions, setCollegeOptions] = React.useState([]);
+  const [newTextInput, setNewTextInput] = useState(""); // Initialize with an empty string
+  const [newTextCharacterCount, setNewTextCharacterCount] = useState(0);
+  // Step 2: Create a function to handle changes to the new text input
+  
 
   const route = useRoute();
-  const { useravtar, username , whoami } = route.params;
+  const { useravtar, username, whoami, usercollege } = route.params;
 
   const opengithubModal = () => {
     setIsgithubModalVisible(true);
@@ -69,6 +73,8 @@ const Projectpost = () => {
 
   const maxTitleLength = 100;
   const maxDescriptionLength = 300;
+  const maxCharacterLength = 100;
+  
 
   const handleTitleChange = (text) => {
     if (text.length <= maxTitleLength) {
@@ -79,6 +85,9 @@ const Projectpost = () => {
       showToast("error", "Project Title limit reached");
     }
   };
+  const handleteamChange = (text) => {
+    setProjectteam(text);
+  };
 
   const handleDescriptionChange = (text) => {
     if (text.length <= maxDescriptionLength) {
@@ -87,6 +96,16 @@ const Projectpost = () => {
     } else {
       // Display a toast message indicating character limit reached
       showToast("error", "Project Description limit reached");
+    }
+  };
+
+  const handleNewTextInputChange = (text) => {
+    if (text.length <= maxCharacterLength) {
+      setNewTextInput(text);
+      setNewTextCharacterCount(text.length);
+    } else {
+      // Display a toast message indicating character limit reached
+      showToast("error", "Character limit reached");
     }
   };
 
@@ -127,11 +146,6 @@ const Projectpost = () => {
     { key: "34", value: "Jenkins", disabled: false },
     { key: "35", value: "Travis CI", disabled: false },
   ];
-
-  const collegeOptions = collegesData.map((college) => ({
-    key: college._id,
-    value: college.college,
-  }));
 
   React.useEffect(() => {
     if (isgithubModalVisible) {
@@ -199,15 +213,17 @@ const Projectpost = () => {
         title: projectTitle,
         description: projectDescription,
         technologies: selected,
-        college: selectedCollege,
+        college: usercollege,
         imageUrl: "",
         githubLink: projectLink,
         createdAt: currentDate.toISOString(),
         isApproved: false,
         username: username,
         avtar: useravtar,
-        whoami : whoami,
-
+        whoami: whoami,
+        mentor: "",
+        teamsize: projectteam,
+        request: newTextInput,
       });
 
       // Upload the image to Firebase Storage if an image is selected
@@ -307,21 +323,35 @@ const Projectpost = () => {
           {descriptionCharacterCount}/{maxDescriptionLength} characters
         </Text>
 
-        <MultipleSelectList
-          setSelected={(val) => setSelected(val)}
-          data={data}
-          save="value"
-          label="Tech Stack"
-          disabledCheckBoxStyles={{ borderWidth: 0 }}
+       {/* Add the new text input component */}
+       <TextInput
+          placeholder="Specific Request"
+          placeholderTextColor={COLORS.dark}
+          style={[
+            styles.input,
+            { width: "100%" },
+            /* Conditionally apply styling for exceeding character limit */
+            newTextCharacterCount > maxCharacterLength && {
+              borderColor: "red",
+              borderWidth: 2,
+            },
+          ]}
+          value={newTextInput}
+          onChangeText={handleNewTextInputChange}
         />
+        
+        {/* Display the character count */}
+        <Text style={styles.characterCount}>
+          {newTextCharacterCount}/{maxCharacterLength} characters
+        </Text>
 
-        <View style={{ marginTop: 20 }}>
+        {/* <View style={{ marginTop: 20 }}>
           <SelectList
             setSelected={(val) => setSelectedCollege(val)}
-            data={collegeOptions}
+            data={collegeOptions} // Use the collegeOptions array as the data
             save="value"
           />
-        </View>
+        </View> */}
 
         <View
           style={{
@@ -366,6 +396,22 @@ const Projectpost = () => {
             )}
           </TouchableOpacity>
         </View>
+
+        <TextInput
+          placeholder="Current Team Size"
+          placeholderTextColor={COLORS.dark}
+          style={{
+            fontFamily: Font["poppins-semiBold"],
+            fontSize: FontSize.small,
+            padding: Spacing * 1,
+            backgroundColor: COLORS.lightPrimary,
+            borderRadius: Spacing,
+            marginTop: 10,
+            marginBottom: 5,
+          }}
+          value={projectteam}
+          onChangeText={handleteamChange}
+        />
 
         <View style={styles.animationContainer}>
           <TouchableOpacity onPress={opengithubModal}>

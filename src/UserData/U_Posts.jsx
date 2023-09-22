@@ -66,6 +66,8 @@ const U_Posts = ({ userId }) => {
               avtar={post.userfullavtar}
               content={post.text}
               image={post.imageUrl}
+              college={post.college}
+              whoami={post.whoami}
             />
           ))}
         </View>

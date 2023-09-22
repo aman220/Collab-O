@@ -13,6 +13,7 @@ import COLORS from "../../const/colors";
 import UserTabs from "../../UserTabs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { firestore, firebaseAuth } from "../../Firebase/firebase";
+import Font from "../../const/Font";
 
 const HEADER_MAX_HEIGHT = 120;
 const HEADER_MIN_HEIGHT = 100;
@@ -61,10 +62,8 @@ class Profile extends Component {
 
     // Now you can extract userId from route.params
     const { userId } = route.params;
-    // const [userData, setUserData] = useState(null);
    
     const { userData } = this.state;
-    console.log(userData);
 
     const VerifiedIcon = () => (
       <Image
@@ -188,6 +187,15 @@ class Profile extends Component {
                 {userData.fullName}
                 {userData.isverified == true && <VerifiedIcon />}
               </Text>
+              <Text
+                style={{  color: COLORS.black,
+                  fontSize: 12,
+                  fontFamily: Font["poppins-regular"],
+                  marginTop: 1,
+                  paddingLeft:10}}
+              >
+                {userData.college}
+              </Text>
             </View>
           )}
 
@@ -208,14 +216,9 @@ class Profile extends Component {
             </View>
           )}
 
-          {/* <Animated.View
-            style={{
-              transform: [{ translateY: userTabsTranslateY }],
-              height: USER_TABS_HEIGHT,
-            }}
-          > */}
+         
           <UserTabs userId={userId}/>
-          {/* </Animated.View> */}
+        
 
           <View style={{ height: 1000 }} />
         </ScrollView>

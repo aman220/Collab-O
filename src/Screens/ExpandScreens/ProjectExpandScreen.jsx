@@ -280,7 +280,7 @@ class ProjectExpandScreen extends Component {
                   padding: 10,
                 }}
               >
-                {projectData.Request}
+                {projectData.request}
               </Text>
             </View>
             <TouchableOpacity style={styles.submitButton} onPress={() => navigation.navigate("bidrequest" ,{postid ,userid,title,userName})}>

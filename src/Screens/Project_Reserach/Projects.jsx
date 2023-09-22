@@ -19,6 +19,7 @@ const Project = () => {
           ...doc.data(),
         }));
         setProjects(projectsArray);
+
         setSkeletonIsLoading(false);
       });
     return () => unsubscribe();
@@ -33,7 +34,7 @@ const Project = () => {
   };
 
   return (
-    <SafeAreaView style={{ backgroundColor: COLORS.white }}>
+    <SafeAreaView style={{  backgroundColor: COLORS.white }}>
       <FlatList
         data={isSkeletonLoading ? [{ id: "skeleton-" + Date.now() }] : projects}
         keyExtractor={(item) => item.id}

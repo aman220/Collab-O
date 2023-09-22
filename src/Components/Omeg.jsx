@@ -106,6 +106,7 @@ const Omeg = ({
   video,
   whoami,
   isverified,
+  college,
 }) => {
   const [likeCount, setLikeCount] = useState(0);
   const [commentCount, setCommentCount] = useState(0);
@@ -312,8 +313,14 @@ const Omeg = ({
           onPress={() => navigation.navigate("myprofile", { userId })}
         >
           <View style={styles.usernameContainer}>
-            <Text style={styles.username}>{username}</Text>
-            {isverified == true && <VerifiedIcon />}
+            <View style={{ flexDirection: "row" }}>
+              <Text style={styles.username}>{username}</Text>
+              {isverified == true && <VerifiedIcon />}
+            </View>
+
+            <Text style={styles.collegestyle}>
+              {college.length > 30 ? `${college.substring(0, 40)}...` : college}
+            </Text>
           </View>
           <View style={styles.whoamiContainer}>
             <Text style={styles.whoamitext}>{whoami}</Text>
@@ -461,8 +468,8 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   usernameContainer: {
-    flexDirection: "row", // Make sure username and VerifiedIcon are in the same row
-    alignItems: "center",
+    flexDirection: "column", // Make sure username and VerifiedIcon are in the same row
+    alignItems: "flex-start",
   },
   username: {
     fontWeight: "bold",
@@ -634,6 +641,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     position: "absolute",
     right: 10,
+  },
+  collegestyle: {
+    color: COLORS.black,
+    fontSize: 12,
+    fontFamily: Font["poppins-regular"],
+    marginTop: 1,
   },
 });
 

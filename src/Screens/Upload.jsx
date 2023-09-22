@@ -45,6 +45,7 @@ const Upload = () => {
   const [isMuted, setIsMuted] = useState(true);
   const [whoami, setUserwhoami] = useState("");
   const [isverified, setUserIsVerified] = useState(false);
+  const [usercollege, setUsercollege] = useState("");
 
 
   useEffect(() => {
@@ -75,6 +76,7 @@ const Upload = () => {
           setUseravtar(userData.avatar);
           setUserwhoami(userData.whoami)
           setUserIsVerified(userData.isverified);
+          setUsercollege(userData.college);
         } else {
           console.log("User data not found!");
         }
@@ -223,6 +225,7 @@ const Upload = () => {
         createdAt: currentDate.toISOString(),
         whoami : whoami,
         isverified:isverified,
+        college:usercollege,
       });
 
       // Update the user's activity collection
@@ -464,7 +467,7 @@ const Upload = () => {
             <View style={styles.sheetBodyOptions}>
               <TouchableOpacity
                 style={styles.sheetBodyOption}
-                onPress={() => navigation.navigate("projectpost" ,{useravtar , username , whoami})}
+                onPress={() => navigation.navigate("projectpost" ,{useravtar , username , whoami , usercollege})}
               >
                 <Image
                   source={require("../assets/project.png")}

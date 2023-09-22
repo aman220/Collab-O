@@ -65,6 +65,7 @@ const RegisterScreen = () => {
         whoami: "null",
         FollowersCount: 0,
         FollowingCount: 0,
+        college:"null",
         PostsCount: 0,
         createdAt: currentDate.toISOString(),
       });

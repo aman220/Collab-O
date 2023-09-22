@@ -12,6 +12,7 @@ import {
   RefreshControl,
   Animated,
   ScrollView,
+  Modal,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 const { height } = Dimensions.get("window");
@@ -28,6 +29,9 @@ import { Toast } from "react-native-toast-message/lib/src/Toast";
 import OmegSkeleton from "./Skeleton/OmegSkeleton";
 import OmegCardPrimary from "./Skeleton/OmegCardPrimary";
 import showToast from "../const/Toast";
+import {
+  SelectList,
+} from "react-native-dropdown-select-list";
 
 const Home = React.memo(() => {
   const [userData, setUserData] = useState(null);
@@ -38,6 +42,17 @@ const Home = React.memo(() => {
   const [posts, setPosts] = useState([]);
   const [isSkeletonLoading, setSekeletonIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [isCollegeModalVisible, setIsCollegeModalVisible] = useState(false);
+  const [collegeData, setSelectedCollege] = React.useState([]);
+  const [collegeOptions, setCollegeOptions] = React.useState([]);
+
+  const openCollegeModal = () => {
+    setIsCollegeModalVisible(true);
+  };
+
+  const closeCollegeModal = () => {
+    setIsCollegeModalVisible(false);
+  };
 
   const fetchUserData = useCallback(async () => {
     try {
@@ -82,19 +97,42 @@ const Home = React.memo(() => {
     }
   }, [userData]);
 
-  const handleOptionSelect = async (newWhoami) => {
+  const handleOptionSelect = async (selectedCollege) => {
     try {
       const uid = await AsyncStorage.getItem("@userUid");
       if (uid != null) {
         const userRef = firestore.collection("users").doc(uid);
-        await userRef.update({ whoami: newWhoami });
-        setUserData((prevUserData) => ({ ...prevUserData, whoami: newWhoami }));
+        await userRef.update({ whoami: selectedCollege });
+        setUserData((prevUserData) => ({ ...prevUserData, whoami: selectedCollege }));
         rbSheetRef.current.close();
       }
     } catch (error) {
       console.log("Error updating user data:", error);
     }
   };
+
+  const handleCollegeSelect = async () => {
+    try {
+      const uid = await AsyncStorage.getItem("@userUid");
+      if (uid != null) {
+        const userRef = firestore.collection("users").doc(uid);
+        await userRef.update({ college: collegeData }); // Update with the serialized college data
+        setUserData((prevUserData) => ({ ...prevUserData, college: collegeData }));
+        closeCollegeModal();
+      }
+    } catch (error) {
+      console.log("Error updating user data:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (userData) {
+      if (userData.whoami !== "null" && userData.college === "null") {
+        // If whoami is not null and college is "null", open the modal
+        openCollegeModal();
+      }
+    }
+  }, [userData]);
 
   // Fetch posts from Firestore
   const fetchPosts = async () => {
@@ -108,7 +146,7 @@ const Home = React.memo(() => {
         }));
         setPosts(postsData);
         setRefreshing(false); // Finish refreshing
-        setSekeletonIsLoading(false)
+        setSekeletonIsLoading(false);
       });
       return unsubscribe;
     } catch (error) {
@@ -134,19 +172,49 @@ const Home = React.memo(() => {
     fetchPosts(); // Fetch posts again
   };
 
-  const handleViewPost = (postId) => {
-    // Get the currently authenticated user's UID
-    const userId = firebase.auth().currentUser.uid;
 
-    // Reference to the Firebase Realtime Database
-    const database = firebase.database();
-
-    // Reference to the "postViews" node
-    const postViewsRef = database.ref("postViews");
-
-    // Update the post's view information
-    postViewsRef.child(postId).child(userId).set(true);
+  const fetchCollegeOptions = async () => {
+    const jsonUrl =
+      "https://firebasestorage.googleapis.com/v0/b/collab-o-452a2.appspot.com/o/colleges.json?alt=media&token=ede10885-d1d3-48fe-bebe-6dfe30fb61b5";
+  
+    try {
+      // Check if the data is cached in AsyncStorage
+      const cachedData = await AsyncStorage.getItem('collegeOptions');
+  
+      if (cachedData) {
+        // If data is cached, use it
+        const options = JSON.parse(cachedData);
+        setCollegeOptions(options);
+      } else {
+        // If not cached, fetch from the URL
+        const response = await fetch(jsonUrl);
+        const data = await response.json();
+        
+        // Slice the data to get only the first 10 entries
+        const slicedData = data.slice(0, 10);
+        console.log(slicedData)
+        
+        const options = slicedData.map((college) => ({
+          key: college._id,
+          value: college.college,
+        }));
+  
+        // Cache the data in AsyncStorage
+        await AsyncStorage.setItem('collegeOptions', JSON.stringify(options));
+  
+        setCollegeOptions(options);
+      }
+    } catch (error) {
+      console.error("Error fetching JSON data:", error);
+    }
   };
+  
+  React.useEffect(() => {
+    fetchCollegeOptions();
+  }, []);
+  
+
+
   const sortedPosts = posts.sort((a, b) => b.createdAt - a.createdAt);
   const reversedPosts = [...sortedPosts].reverse();
   return (
@@ -190,14 +258,12 @@ const Home = React.memo(() => {
       </View>
 
       <View>
-        
         {isSkeletonLoading ? (
-          <View style={{ marginTop: 10 ,marginVertical:10,}}>
-             <OmegCardPrimary/>
+          <View style={{ marginTop: 10, marginVertical: 10 }}>
+            <OmegCardPrimary />
             <OmegSkeleton></OmegSkeleton>
-            <OmegCardPrimary/>
+            <OmegCardPrimary />
           </View>
-
         ) : (
           <FlatList
             data={reversedPosts}
@@ -216,6 +282,7 @@ const Home = React.memo(() => {
                   timestap={item.createdAt}
                   whoami={item.whoami}
                   isverified={item.isverified}
+                  college={item.college}
                 />
               );
             }}
@@ -255,33 +322,6 @@ const Home = React.memo(() => {
           </Text>
           <View style={style.sheetBody}>
             <View style={style.sheetBodyOptions}>
-              {/* <TouchableOpacity
-                style={[
-                  style.sheetBodyOption,
-                  Selected === 0 && { borderColor: "#000" },
-                ]}
-                onPress={() => {
-                  setSelected(0);
-                }}
-              >
-                <Image
-                  source={require("../assets/graduate.png")}
-                  style={{
-                    width: 70,
-                    height: 70,
-                  }}
-                ></Image>
-                {/* color={Selected === 0 ? "#000" : "#bcddd9"} */}
-              {/* <Text
-                  style={[
-                    style.stylebodyoptiontext,
-                    Selected === 0 && { color: "#000" },
-                  ]}
-                >
-                  Alumani
-                </Text>
-              </TouchableOpacity> */}
-
               <TouchableOpacity
                 style={[
                   style.sheetBodyOption,
@@ -365,6 +405,31 @@ const Home = React.memo(() => {
           </TouchableOpacity>
         </View>
       </RBSheet>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isCollegeModalVisible}
+      >
+        <View style={style.centeredView}>
+          <View style={style.modalView}>
+            <Text style={style.modalText}>Select Your College</Text>
+            <View style={{ marginTop: 20 }}>
+              <SelectList
+                setSelected={(val) => setSelectedCollege(val)}
+                data={collegeOptions} // Use the collegeOptions array as the data
+                save="value"
+              />
+            </View>
+            <TouchableOpacity
+              style={style.modalButton}
+              onPress={handleCollegeSelect}
+            >
+              <Text style={style.modalButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 });
@@ -432,6 +497,43 @@ const style = StyleSheet.create({
     marginHorizontal: 60,
     flex: 1,
     backgroundColor: "#E0E0E0",
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    width: "100%",
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginTop: 10,
+    backgroundColor: COLORS.primary,
+  },
+  modalButtonText: {
+    color: COLORS.white,
+    fontFamily: Font["poppins-regular"],
+    fontSize: FontSize.medium,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalView: {
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    padding: 20,
+    width: "80%",
+    alignItems: "center",
+    elevation: 5, // Add elevation for a card-like effect
+  },
+  modalText: {
+    marginBottom: 20,
+    textAlign: "center",
+    fontFamily: Font["poppins-regular"],
+    fontSize: FontSize.medium,
   },
 });
 
