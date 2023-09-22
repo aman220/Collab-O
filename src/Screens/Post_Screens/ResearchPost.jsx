@@ -14,19 +14,23 @@ import Font from "../../const/Font";
 import FontSize from "../../const/FontSize";
 import Spacing from "../../const/Spacing";
 import { firestore } from "../../Firebase/firebase";
-
+import { useNavigation, useRoute } from "@react-navigation/native";
 
 const ResearchPost = () => {
   const [projectTitle, setProjectTitle] = useState("");
   const [abstract, setAbstract] = useState("");
   const [authorsInput, setAuthorsInput] = useState("");
   const [authors, setAuthors] = useState([]);
-  const [keywords, setKeywords] = useState("");
   const [methodology, setMethodology] = useState("");
   const [progressStatus, setProgressStatus] = useState("");
+  const [keywordsInput, setKeywordsInput] = useState("");
+  const [keywords, setKeywords] = useState([]);
 
-  const maxTitleLength = 100; // Define your maximum title length here
-  const maxAbstractLength = 500; // Define your maximum abstract length here
+  const route = useRoute();
+  const { useravtar, username, whoami, usercollege } = route.params;
+
+  const maxTitleLength = 100;
+  const maxAbstractLength = 500;
   const titleCharacterCount = projectTitle.length;
 
   const handleTitleChange = (text) => {
@@ -52,6 +56,23 @@ const ResearchPost = () => {
     const updatedAuthors = [...authors];
     updatedAuthors.splice(index, 1);
     setAuthors(updatedAuthors);
+  };
+
+  const handleKeywordsInputChange = (text) => {
+    setKeywordsInput(text);
+    if (text.endsWith(",")) {
+      const keyword = text.slice(0, -1).trim();
+      if (keyword) {
+        setKeywords([...keywords, keyword]);
+        setKeywordsInput("");
+      }
+    }
+  };
+
+  const handleRemoveKeyword = (index) => {
+    const updatedKeywords = [...keywords];
+    updatedKeywords.splice(index, 1);
+    setKeywords(updatedKeywords);
   };
 
   const handleKeywordsChange = (text) => {
@@ -82,6 +103,10 @@ const ResearchPost = () => {
         keywords,
         methodology,
         progressStatus,
+        useravtar,
+        username,
+        whoami,
+        usercollege,
         //timestamp: firestore.FieldValue.serverTimestamp(), // Add a timestamp
       });
 
@@ -90,9 +115,10 @@ const ResearchPost = () => {
       setAbstract("");
       setAuthorsInput("");
       setAuthors([]);
-      setKeywords("");
+      setKeywordsInput("");
       setMethodology("");
       setProgressStatus("");
+      setKeywords([]);
 
       alert("Research post submitted successfully!");
     } catch (error) {
@@ -119,7 +145,8 @@ const ResearchPost = () => {
             marginTop: 25,
           }}
         >
-          Find the Right Person For Your Research Work Here...{"\n"}Just Post an Ongoing Research
+          Find the Right Person For Your Research Work Here...{"\n"}Just Post an
+          Ongoing Research
         </Text>
       </View>
       <ScrollView style={styles.contentContainer}>
@@ -153,7 +180,7 @@ const ResearchPost = () => {
 
         <View style={styles.authorInputContainer}>
           <Text style={styles.label}>Authors</Text>
-          
+
           <TextInput
             placeholder="Add authors separated by commas"
             placeholderTextColor={COLORS.dark}
@@ -166,6 +193,28 @@ const ResearchPost = () => {
               <View style={styles.authorTag} key={index}>
                 <Text style={styles.authorText}>{author}</Text>
                 <TouchableOpacity onPress={() => handleRemoveAuthor(index)}>
+                  <Icon name="close" size={20} color={COLORS.dark} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.authorInputContainer}>
+          <Text style={styles.label}>Keywords</Text>
+
+          <TextInput
+            placeholder="Add keywords separated by commas"
+            placeholderTextColor={COLORS.dark}
+            style={styles.authorInput} // You can keep the same style for now
+            value={keywordsInput}
+            onChangeText={handleKeywordsInputChange}
+          />
+          <View style={styles.authorTags}>
+            {keywords.map((keyword, index) => (
+              <View style={styles.authorTag} key={index}>
+                <Text style={styles.authorText}>{keyword}</Text>
+                <TouchableOpacity onPress={() => handleRemoveKeyword(index)}>
                   <Icon name="close" size={20} color={COLORS.dark} />
                 </TouchableOpacity>
               </View>

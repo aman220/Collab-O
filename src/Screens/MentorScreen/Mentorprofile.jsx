@@ -14,9 +14,8 @@ import Font from "../../const/Font";
 import FontSize from "../../const/FontSize";
 import Spacing from "../../const/Spacing";
 import { useNavigation } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { firestore } from "../../Firebase/firebase";
-
-
 
 const HEADER_MAX_HEIGHT = 120;
 const HEADER_MIN_HEIGHT = 100;
@@ -24,7 +23,7 @@ const PROFILE_IMAGE_MAX_HEIGHT = 80;
 const PROFILE_IMAGE_MIN_HEIGHT = 40;
 const USER_TABS_HEIGHT = 50;
 
-class NotificationExpand extends Component {
+class Mentorprofile extends Component {
   constructor(props) {
     super(props);
 
@@ -37,49 +36,33 @@ class NotificationExpand extends Component {
     this.setState({ activeButton: buttonName });
   };
 
-  async componentDidMount() {
-    const { route } = this.props;
-    const { senderId, reciverId } = route.params;
-  
-    try {
-      const usersCollectionRef = firestore.collection("Chat_Rooms");
-      const roomDocId = "JhonDoreroom"; // Replace with the desired document ID
-  
-      // Check if the document already exists
-      const roomDocSnapshot = await usersCollectionRef.doc(roomDocId).get();
-  
-      if (!roomDocSnapshot.exists) {
-        // Document doesn't exist, create it
-        const currentDate = new Date();
-  
-        // Create the user document with initial data
-        await usersCollectionRef.doc(roomDocId).set({
-          senderId: reciverId,
-          // sendername:,
-          reciverid: senderId,
-          // recivername:,
-          createdAt: currentDate.toISOString(),
-        });
-  
-        // Create the "messages" subcollection with an empty document
-        const messagesCollectionRef = usersCollectionRef.doc(roomDocId).collection("messages");
-        const initialMessageRef = messagesCollectionRef.doc();
-        await initialMessageRef.set({
-          messages: "",
-        });
-      }
+  //   componentDidMount() {
+  //     const { route } = this.props;
+  //     const { postid } = route.params;
 
-    } catch (error) {
-      // Handle the error here
-      console.error("Error:", error);
-    }
-  }
-  
+  //     // Fetch user data based on userId
+  //     firestore
+  //       .collection("projects")
+  //       .doc(postid)
+  //       .get()
+  //       .then((doc) => {
+  //         if (doc.exists) {
+  //           const projectData = doc.data();
+  //           this.setState({ projectData });
+  //         } else {
+  //           console.log("project data not found");
+  //         }
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error fetching project data:", error);
+  //       });
+  //   }
 
   render() {
-
-    const {  navigation } = this.props;
-
+    // const { route } = this.props;
+    // const { postid , userid,title,userName } = route.params;
+    // const { projectData } = this.state;
+    // const {  navigation } = this.props;
 
     const VerifiedIcon = () => (
       <Image
@@ -149,7 +132,7 @@ class NotificationExpand extends Component {
             style={{ position: "absolute", bottom: headerTitleBottom }}
           >
             <Text style={{ color: "white", fontSize: 20, fontWeight: "bold" }}>
-              Aman Raj Singh
+              Ass.Prof Mridul Dixit
             </Text>
           </Animated.View>
         </Animated.View>
@@ -183,103 +166,99 @@ class NotificationExpand extends Component {
 
           <View>
             <Text style={{ fontWeight: "bold", fontSize: 26, paddingLeft: 10 }}>
-              Aman Raj Singh
+              Ass.Prof Mridul Dixit
               <VerifiedIcon />
             </Text>
-            <Text
-              style={{
-                fontFamily: Font["poppins-regular"],
-                fontSize: 15,
-                paddingLeft: 10,
-              }}
-            >
-              GLA University Mathura
-            </Text>
           </View>
+          <Text
+            style={{
+              fontFamily: Font["poppins-regular"],
+              fontSize: 15,
+              paddingLeft: 10,
+            }}
+          >
+            GLA University , Mathura
+          </Text>
+
+          <View style={styles.Tags}>
+            <View style={styles.teamTag}>
+              <Text style={styles.teamText}>Mentor</Text>
+            </View>
+          </View>
+
+          <Text
+            style={{
+              fontFamily: Font["Cantarell-regular"],
+              fontSize: FontSize.large,
+              maxWidth: "98%",
+              marginTop: 10,
+              padding: 10,
+              textAlign: "center",
+            }}
+          >
+            Innovation is the Key of Beterment of Education of Student's Be
+            Innovative Make Solution Better..
+          </Text>
+
           <Text
             style={{
               fontFamily: Font["poppins-semiBold"],
               fontSize: FontSize.large,
               maxWidth: "98%",
-              marginTop: 20,
-              textAlign: "center",
+              marginTop: 10,
+              textAlign: "left",
             }}
           >
-            I want to join this project and lets make it a big project It also
-            has the potential to convert a start up
+            Feel Free To Contact me
           </Text>
           <View style={styles.Tags}>
             <View style={styles.teamTag}>
-              <Text style={styles.teamText}>Linkedin Profile</Text>
+              <Icon
+                style={{
+                  backgroundColor: COLORS.lightPrimary,
+                  borderRadius: 20,
+                  marginBottom: 5,
+                  marginRight:5,
+                }}
+                name="phone"
+                size={25}
+              />
+              <Text style={styles.teamText}>+71 7037983391</Text>
+            </View>
+            <View style={styles.teamTag}>
+              <Icon
+                style={{
+                  backgroundColor: COLORS.lightPrimary,
+                  borderRadius: 20,
+                  marginBottom: 5,
+                  marginRight:5,
+                }}
+                name="office-building-marker-outline"
+                size={25}
+              />
+              <Text style={styles.teamText}>AB-1 Room No:325 {`\n`}GLA University Mathura</Text>
+            </View>
+            <View style={styles.teamTag}>
+              <Icon
+                style={{
+                  backgroundColor: COLORS.lightPrimary,
+                  borderRadius: 20,
+                  marginBottom: 5,
+                  marginRight:5,
+                }}
+                name="clock-time-ten-outline"
+                size={25}
+              />
+              <Text style={styles.teamText}>10:00am To 12:00pm</Text>
             </View>
           </View>
-
-          <View style={{flexDirection:"row" , justifyContent:"space-between"}}>
-          <TouchableOpacity
-            style={{
-              padding: Spacing,
-              backgroundColor: "#FFC0CB",
-              marginVertical: Spacing * 3,
-              width:"40%",
-              marginHorizontal: Spacing,
-              borderRadius: Spacing,
-              shadowColor: COLORS.primary,
-              shadowOffset: {
-                width: 0,
-                height: Spacing,
-              },
-              shadowOpacity: 0.3,
-              shadowRadius: Spacing,
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: Font["poppins-bold"],
-                color: COLORS.white,
-                textAlign: "center",
-                fontSize: FontSize.large,
-              }}
-            >
-              Reject
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              padding: Spacing,
-              backgroundColor: COLORS.primary,
-              marginVertical: Spacing * 3,
-              marginHorizontal: Spacing,
-              width:"40%",
-              borderRadius: Spacing,
-              shadowColor: COLORS.primary,
-              shadowOffset: {
-                width: 0,
-                height: Spacing,
-              },
-              shadowOpacity: 0.3,
-              shadowRadius: Spacing,
-            }}
-            onPress={() => navigation.navigate("chatscreen")}
-          >
-            <Text
-              style={{
-                fontFamily: Font["poppins-bold"],
-                color: COLORS.white,
-                textAlign: "center",
-                fontSize: FontSize.large,
-              }}
-            >
-              Accept
-            </Text>
-          </TouchableOpacity>
-        </View>
         </ScrollView>
       </SafeAreaView>
     );
   }
 }
 
-export default NotificationExpand;
+export default Mentorprofile;
 
 const styles = StyleSheet.create({
   container: {
@@ -338,7 +317,7 @@ const styles = StyleSheet.create({
   teamTag: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "lightgreen",
+    backgroundColor: COLORS.gray,
     padding: 10,
     borderRadius: Spacing,
     marginBottom: 10,
@@ -372,24 +351,5 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontFamily: Font["poppins-semiBold"],
     fontSize: FontSize.medium,
-  },
-  teamTag: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "lightgreen",
-    padding: 10,
-    borderRadius: Spacing,
-    marginBottom: 10,
-    marginRight: 10,
-  },
-  teamText: {
-    fontFamily: Font["poppins-semiBold"],
-    fontSize: FontSize.small,
-    marginRight: 5,
-  },
-  Tags: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 10,
   },
 });

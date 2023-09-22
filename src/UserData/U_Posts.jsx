@@ -19,7 +19,7 @@ const U_Posts = ({ userId }) => {
         .doc("user_activity");
         const userActivityDoc = await newRef.get();
         const userData = userActivityDoc.data();
-        console.log(userData)
+   
 
       if (userActivityDoc.exists) {
         const userData = userActivityDoc.data();

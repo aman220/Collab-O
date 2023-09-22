@@ -3,20 +3,19 @@ import { View, Text, Image, StyleSheet, TouchableOpacity } from "react-native";
 import COLORS from "../const/colors";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Font from "../const/Font";
+import fonts from "../../config/fonts";
 
 const ResearchCard = (props) => {
   const {
-    title,
     abstract,
-    authors,
-    publicationDate,
-    journalName,
+    author,
     keywords,
-    link,
-    userName,
-    collegeName,
-    timeStamp,
-    whoami,
+    progress,
+    title,
+    userName, 
+    userwhomai,
+    college,
+    avtar
   } = props;
 
   const [showFullAbstract, setShowFullAbstract] = useState(false);
@@ -35,23 +34,23 @@ const ResearchCard = (props) => {
       <View style={styles.header}>
         <View style={styles.avatarShadow}>
           <Image
-            source={require("../assets/photo.jpg")}
+            source={{ uri: avtar }}
             style={styles.avatar}
           />
         </View>
         <View style={styles.userInfoContainer}>
           <Text style={styles.userName}>{userName}</Text>
-          <Text style={styles.collegeName}>{collegeName}</Text>
-          <Text style={styles.timeStamp}>{formatDateTime(timeStamp)}</Text>
+          <Text style={styles.collegeName}>{college}</Text>
+          {/* <Text style={styles.timeStamp}>{progress}</Text> */}
           <View style={styles.whoamiContainer}>
-            <Text style={styles.whoamitext}>{whoami}</Text>
+            <Text style={styles.whoamitext}>{userwhomai}</Text>
           </View>
         </View>
       </View>
 
       <Text style={styles.title}>{title}</Text>
 
-      <Text style={styles.journalName}>{journalName}</Text>
+      {/* <Text style={styles.journalName}>{journalName}</Text> */}
 
       <View>
         <Text
@@ -72,15 +71,15 @@ const ResearchCard = (props) => {
       <View style={styles.iconInfoContainer}>
         <Icon name="account-group-outline" size={18} style={styles.iconStyle} />
         <View style={styles.authorsContainer}>
-          {authors &&
-            authors.slice(0, 3).map((author, index) => (
+          {author &&
+            author.slice(0, 3).map((author, index) => (
               <Text key={index} style={styles.author}>
                 {author}
-                {index !== authors.length - 1 ? "," : ""}
+                {index !== author.length - 1 ? "," : ""}
               </Text>
             ))}
-          {authors && authors.length > 3 && (
-            <Text style={styles.author}>+ {authors.length - 3} more</Text>
+          {author && author.length > 3 && (
+            <Text style={styles.author}>+ {author.length - 3} more</Text>
           )}
         </View>
       </View>
@@ -88,7 +87,7 @@ const ResearchCard = (props) => {
       <View style={styles.iconInfoContainer}>
         <Icon name="calendar" size={18} style={styles.iconStyle} />
         <Text style={styles.publicationDate}>
-          Published on: {formatDateTime(publicationDate)}
+          Status: {progress}
         </Text>
       </View>
 
@@ -139,6 +138,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 70,
     borderRadius: 35,
+    marginBottom:50,
   },
   container: {
     flex: 1,
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   userName: {
-    fontFamily: Font.bold,
+    fontFamily: Font["poppins-bold"],
     fontSize: 18,
     color: COLORS.black,
     marginBottom: 3,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   whoamitext: {
-    fontFamily: Font.medium,
+    fontFamily: Font["poppins-bold"],
     fontSize: 14,
     color: COLORS.primary,
   },

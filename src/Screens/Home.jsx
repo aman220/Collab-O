@@ -189,12 +189,9 @@ const Home = React.memo(() => {
         // If not cached, fetch from the URL
         const response = await fetch(jsonUrl);
         const data = await response.json();
-        
-        // Slice the data to get only the first 10 entries
-        const slicedData = data.slice(0, 10);
-        console.log(slicedData)
-        
-        const options = slicedData.map((college) => ({
+  
+        // Convert all the data to options
+        const options = data.map((college) => ({
           key: college._id,
           value: college.college,
         }));
@@ -208,6 +205,7 @@ const Home = React.memo(() => {
       console.error("Error fetching JSON data:", error);
     }
   };
+  
   
   React.useEffect(() => {
     fetchCollegeOptions();

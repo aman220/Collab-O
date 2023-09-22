@@ -27,6 +27,8 @@ import ProjectExpandScreen from './src/Screens/ExpandScreens/ProjectExpandScreen
 import Verification from './src/Screens/Verification/Verification';
 import NotificatiomExpand from './src/Screens/ExpandScreens/NotificationExpand';
 import NotificationExpand from './src/Screens/ExpandScreens/NotificationExpand';
+import Mentorprofile from './src/Screens/MentorScreen/Mentorprofile';
+import ChatScreen from './src/Screens/Chatting/ChatScreen';
 
 const Stack = createStackNavigator();
 
@@ -145,6 +147,16 @@ export default function App() {
          <Stack.Screen
           name="Notificationexpand"
           component={NotificationExpand}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="mentorprofile"
+          component={Mentorprofile}
+          options={{ headerShown: false }}
+        />
+         <Stack.Screen
+          name="chatscreen"
+          component={ChatScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

@@ -18,7 +18,6 @@ import FontSize from "../../const/FontSize";
 import Spacing from "../../const/Spacing";
 import { Toast } from "react-native-toast-message/lib/src/Toast";
 import showToast from "../../const/Toast";
-import collegesData from "../../data/colleges.json";
 import LottieView from "lottie-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { PermissionsAndroid } from "react-native";
@@ -241,6 +240,31 @@ const Projectpost = () => {
         await newProjectRef.update({ imageUrl });
       }
 
+      const userActivityRef = firestore.collection("users");
+      const newRef = userActivityRef
+        .doc(uid)
+        .collection("userdata")
+        .doc("user_projects");
+  
+      // Retrieve the current data from the document
+      const snapshot = await newRef.get();
+      const userData = snapshot.data() || {}; // Initialize as an empty object if data is undefined
+      const currentPosts = userData.projects || [];
+  
+      // Append the new ID to the array
+      const updatedPosts = [...currentPosts, newProjectRef.id];
+  
+      // Update the document with the modified array
+      try {
+        await newRef.set({
+          projects: updatedPosts, // Set or update the 'projects' field in the document
+        }, { merge: true }); // Merge to keep existing data in the document
+  
+        console.log("Project ID added to the array successfully!");
+      } catch (error) {
+        console.error("Error adding project ID to the array:", error);
+      }
+
       // Reset form fields and navigate to another screen
       setProjectTitle("");
       setProjectDescription("");
@@ -345,6 +369,13 @@ const Projectpost = () => {
           {newTextCharacterCount}/{maxCharacterLength} characters
         </Text>
 
+        <MultipleSelectList
+          setSelected={(val) => setSelected(val)}
+          data={data}
+          save="value"
+          label="Tech Stack"
+          disabledCheckBoxStyles={{ borderWidth: 0 }}
+        />
         {/* <View style={{ marginTop: 20 }}>
           <SelectList
             setSelected={(val) => setSelectedCollege(val)}

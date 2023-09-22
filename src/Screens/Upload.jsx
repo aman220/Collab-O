@@ -481,7 +481,7 @@ const Upload = () => {
 
               <TouchableOpacity
                 style={styles.sheetBodyOption}
-                onPress={() => navigation.navigate("researchpost")}
+                onPress={() => navigation.navigate("researchpost",{useravtar , username , whoami , usercollege})}
               >
                 <Image
                   source={require("../assets/research.png")}

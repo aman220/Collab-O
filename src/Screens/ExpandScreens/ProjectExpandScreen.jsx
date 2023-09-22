@@ -15,6 +15,7 @@ import FontSize from "../../const/FontSize";
 import Spacing from "../../const/Spacing";
 import { firestore } from "../../Firebase/firebase";
 import { useNavigation } from "@react-navigation/native";
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 const HEADER_MAX_HEIGHT = 120;
 const HEADER_MIN_HEIGHT = 100;
@@ -39,6 +40,8 @@ class ProjectExpandScreen extends Component {
   componentDidMount() {
     const { route } = this.props;
     const { postid } = route.params;
+    console.log(postid)
+    
     
     // Fetch user data based on userId
     firestore
@@ -241,6 +244,7 @@ class ProjectExpandScreen extends Component {
                 <Text style={styles.teamText}>
                   Project Mentor : {projectData.mentor}
                 </Text>
+                <Icon style={{backgroundColor:COLORS.lightPrimary, borderRadius:20,marginBottom:5,}} name="information-variant" size={25} onPress={() => navigation.navigate("mentorprofile")}/>
               </View>
               <TouchableOpacity
                 style={{

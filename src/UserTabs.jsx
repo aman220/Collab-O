@@ -36,7 +36,7 @@ const UserTabs = ({ userId }) => {
             onPress={() => handleTabPress("Post")}
           />
           <TabButton
-            label="Media"
+            label="Projects"
             isActive={activeTab === "Media"}
             onPress={() => handleTabPress("Media")}
           />
@@ -49,7 +49,7 @@ const UserTabs = ({ userId }) => {
       </View>
       <View style={styles.tabContentContainer}>
         {activeTab === "Post" && <U_Posts userId={userId} />}
-        {activeTab === "Media" && <U_Media />}
+        {activeTab === "Media" && <U_Media userId={userId}/>}
         {activeTab === "Activity" && <U_activity />}
       </View>
     </View>

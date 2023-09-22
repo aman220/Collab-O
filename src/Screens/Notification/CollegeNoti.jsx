@@ -82,6 +82,8 @@ const CollegeNoti = () => {
             name={item.name}
             college={item.college}
             avtar={item.avtar}
+            senderId={item.senderId}
+            reciverId={item.reciverId}
           />
         </View>
       </Swipeable>

@@ -30,12 +30,12 @@ const ProjectTabs = () => {
       <View style={styles.buttonsContainer}>
         <View style={styles.innerbuttonContainer}>
           <TabButton
-            label="Campus"
+            label="Projects"
             isActive={activeTab === "campus"}
             onPress={() => handleTabPress("campus")}
           />
           <TabButton
-            label="Global"
+            label="Reserach"
             isActive={activeTab === "global"}
             onPress={() => handleTabPress("global")}
           />
@@ -43,7 +43,7 @@ const ProjectTabs = () => {
       </View>
       <View style={styles.tabContentContainer}>
         {activeTab === "campus" && <Project/>}
-        {activeTab === "Research" && <Reserach/>}
+        {activeTab === "global" && <Reserach/>}
       </View>
     </View>
   );

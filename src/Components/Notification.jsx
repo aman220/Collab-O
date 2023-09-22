@@ -11,8 +11,11 @@ import Font from "../const/Font";
 import COLORS from "../const/colors";
 import { useNavigation } from "@react-navigation/native";
 
-const Notification = ({ whyjoin, name, college, avtar }) => {
+const Notification = ({ whyjoin, name, college, avtar ,senderId,reciverId}) => {
+  
   const navigation = useNavigation();
+
+
   return (
     <SafeAreaView style={styles.container}>
       <Image
@@ -20,7 +23,7 @@ const Notification = ({ whyjoin, name, college, avtar }) => {
         style={styles.userImage}
       />
 
-      <TouchableOpacity style={styles.noticontent} onPress={() => navigation.navigate("Notificationexpand")}>
+      <TouchableOpacity style={styles.noticontent} onPress={() => navigation.navigate("Notificationexpand",{navigation,senderId,reciverId})}>
         <View style={styles.userInfo}>
           <Text style={styles.username}>{name}</Text>
           <Text style={styles.userCollege}>{college}</Text>
