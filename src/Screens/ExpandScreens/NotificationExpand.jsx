@@ -39,7 +39,7 @@ class NotificationExpand extends Component {
 
   async componentDidMount() {
     const { route } = this.props;
-    const { senderId, reciverId } = route.params;
+    const { senderId, reciverId ,name,college,avtar } = route.params;
   
     try {
       const usersCollectionRef = firestore.collection("Chat_Rooms");
@@ -79,7 +79,8 @@ class NotificationExpand extends Component {
   render() {
 
     const {  navigation } = this.props;
-
+    const { route } = this.props;
+    const { senderId, reciverId ,name,college,avtar } = route.params;
 
     const VerifiedIcon = () => (
       <Image
@@ -149,7 +150,7 @@ class NotificationExpand extends Component {
             style={{ position: "absolute", bottom: headerTitleBottom }}
           >
             <Text style={{ color: "white", fontSize: 20, fontWeight: "bold" }}>
-              Aman Raj Singh
+             {name}
             </Text>
           </Animated.View>
         </Animated.View>
@@ -175,7 +176,7 @@ class NotificationExpand extends Component {
             }}
           >
             <Image
-              source={require("../../assets/photo.jpg")}
+              source={{ uri: avtar }}
               style={{ flex: 1, width: null, height: null }}
               resizeMode="cover"
             />
@@ -183,7 +184,7 @@ class NotificationExpand extends Component {
 
           <View>
             <Text style={{ fontWeight: "bold", fontSize: 26, paddingLeft: 10 }}>
-              Aman Raj Singh
+             {name}
               <VerifiedIcon />
             </Text>
             <Text
@@ -193,7 +194,7 @@ class NotificationExpand extends Component {
                 paddingLeft: 10,
               }}
             >
-              GLA University Mathura
+              {college}
             </Text>
           </View>
           <Text

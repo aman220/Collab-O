@@ -26,10 +26,6 @@ const Search = ({ username, useravtar }) => {
   const [isSkeletonLoading, setSkeletonIsLoading] = useState(true);
   const [showProjectTabs, setShowProjectTabs] = useState(false);
 
- 
-
-
-
   const handleSearch = () => {
     console.log("Searching for:", searchText);
   };
@@ -87,12 +83,12 @@ const Search = ({ username, useravtar }) => {
               <Icon name="close-circle" size={20} color={COLORS.grey} />
             </TouchableOpacity>
           )}
-          <TouchableOpacity >
+          <TouchableOpacity>
             <FeatherIcon name="filter" size={20} color={COLORS.grey} />
           </TouchableOpacity>
         </Animated.View>
       </View>
-      {/* Selection section */}
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -114,10 +110,12 @@ const Search = ({ username, useravtar }) => {
             )
           )}
         </View>
-      </ScrollView>
-      {/* Project Cards */}
 
-       <ProjectTabs />
+        
+      </ScrollView>
+      {/* Selection section */}
+     
+      <ProjectTabs />
     </SafeAreaView>
   );
 };

@@ -23,7 +23,7 @@ const Notification = ({ whyjoin, name, college, avtar ,senderId,reciverId}) => {
         style={styles.userImage}
       />
 
-      <TouchableOpacity style={styles.noticontent} onPress={() => navigation.navigate("Notificationexpand",{navigation,senderId,reciverId})}>
+      <TouchableOpacity style={styles.noticontent} onPress={() => navigation.navigate("Notificationexpand",{navigation,senderId,reciverId,name,college,avtar})}>
         <View style={styles.userInfo}>
           <Text style={styles.username}>{name}</Text>
           <Text style={styles.userCollege}>{college}</Text>

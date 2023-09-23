@@ -134,7 +134,7 @@ const Omeg = ({
           const userData = doc.data();
           setAvatar(userData.avatar);
           setUsername(userData.fullName);
-          setCollege(userData.College);
+          setCollege(userData.college);
           setwhoami(userData.whoami);
           console.log(userData);
         } else {

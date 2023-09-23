@@ -29,6 +29,8 @@ import NotificatiomExpand from './src/Screens/ExpandScreens/NotificationExpand';
 import NotificationExpand from './src/Screens/ExpandScreens/NotificationExpand';
 import Mentorprofile from './src/Screens/MentorScreen/Mentorprofile';
 import ChatScreen from './src/Screens/Chatting/ChatScreen';
+import ChattingScreen from './src/Screens/ChattingScreen';
+import GeneralChatScreen from './src/Screens/Discussion/General/GeneralChatScreen';
 
 const Stack = createStackNavigator();
 
@@ -157,6 +159,16 @@ export default function App() {
          <Stack.Screen
           name="chatscreen"
           component={ChatScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="chat"
+          component={ChattingScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="generalChatScreen"
+          component={GeneralChatScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

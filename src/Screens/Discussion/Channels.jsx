@@ -5,9 +5,11 @@ import Font from "../../const/Font";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import FontSize from "../../const/FontSize";
 import COLORS from "../../const/colors";
+import { useNavigation } from "@react-navigation/native";
 
 const Channels = () => {
   const [Selected, setSelected] = React.useState(0);
+  const navigation = useNavigation();
 
   const options = [
     { label: "General", image: require("../../assets/graduate.png") },
@@ -18,6 +20,12 @@ const Channels = () => {
     { label: "MetaVerse", image: require("../../assets/virtual-reality.png") },
   ];
 
+  const handleOptionPress = (index) => {
+    setSelected(index);
+    if (index === 0) {
+      navigation.navigate("generalChatScreen"); // Navigate to generalChatScreen when General is clicked
+    }
+  };
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white }}>
       <View style={styles.header}>
@@ -48,9 +56,7 @@ const Channels = () => {
                 styles.sheetBodyOption,
                 Selected === index && { borderColor: "#000" },
               ]}
-              onPress={() => {
-                setSelected(index);
-              }}
+              onPress={() => handleOptionPress(index)}
             >
               <Image
                 source={option.image}

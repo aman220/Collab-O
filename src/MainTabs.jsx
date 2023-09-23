@@ -8,6 +8,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import Upload from './Screens/Upload';
 import { useNavigation } from "@react-navigation/native";
 import Account from './Screens/AccountSection/Account';
+import ChatScreen from './Screens/Chatting/ChatScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -60,6 +61,17 @@ const MainTabs = () => {
           tabBarColor: '#009387',
           tabBarIcon: ({ color }) => (
             <Icon name="add-circle-outline" color={color} size={26} onPress={() => navigation.navigate("upload")}/>
+          ),
+        }}
+      />
+       <Tab.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{
+          tabBarLabel: 'Upload',
+          tabBarColor: '#009387',
+          tabBarIcon: ({ color }) => (
+            <Icon name="chatbubble-ellipses-outline" color={color} size={26} onPress={() => navigation.navigate("chatscreen")}/>
           ),
         }}
       />
