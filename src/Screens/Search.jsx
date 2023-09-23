@@ -88,14 +88,16 @@ const Search = ({ username, useravtar }) => {
           </TouchableOpacity>
         </Animated.View>
       </View>
+      <View>
 
+      
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={style.selectableItems}
       >
         <View style={style.selectableItemsList}>
-          {["React Native", "Android", "MERN", "Java", "Python", "Django"].map(
+          {["React Native: 1", "Android: 20", "MERN: 23", "Java: 40", "Python: 54", "Django: 90"].map(
             (item) => (
               <TouchableOpacity
                 key={item}
@@ -114,7 +116,7 @@ const Search = ({ username, useravtar }) => {
         
       </ScrollView>
       {/* Selection section */}
-     
+      </View>
       <ProjectTabs />
     </SafeAreaView>
   );

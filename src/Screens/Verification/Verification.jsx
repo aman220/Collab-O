@@ -14,6 +14,8 @@ import Font from "../../const/Font";
 import Spacing from "../../const/Spacing";
 import FontSize from "../../const/FontSize";
 import { Camera } from 'expo-camera';
+import * as ImagePicker from "expo-image-picker";
+
 
 const { height } = Dimensions.get("screen");
 
@@ -22,26 +24,30 @@ const Verification = () => {
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.back);
   const [image, setImage] = useState(null);
   const cameraRef = useRef(null);
+  const [isCameraVisible, setCameraVisible] = useState(false);
 
-  const openCamera = async () => {
-    try {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      if (status === "granted") {
-       console.log("granted")
-      } else {
-        console.log("granted")
-      }
-    } catch (error) {
-      console.error("Error opening camera:", error);
-      // Handle the error here
+  const openSystemCamera = async () => {
+    let cameraResult = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true, 
+      aspect: [4, 3], 
+      quality: 1, 
+    });
+
+    if (!cameraResult.cancelled) {
+      setImage(cameraResult.uri);
     }
   };
   
 
   const takePicture = async () => {
-    if (cameraRef.current) {
-      const { uri } = await cameraRef.current.takePictureAsync();
-      setImage(uri);
+    try {
+      if (cameraRef.current) {
+        const { uri } = await cameraRef.current.takePictureAsync();
+        setImage(uri);
+      }
+    } catch (error) {
+      console.error("Error taking picture:", error);
     }
   };
 
@@ -79,8 +85,19 @@ const Verification = () => {
         </Text>
 
         {/* Display image if captured */}
-        {image && (
-          <Image source={{ uri: image }} style={{ width: 200, height: 200, alignSelf: "center" }} />
+        {isCameraVisible ? (
+          <Camera
+            ref={cameraRef}
+            style={{ height: "100%" }}
+            type={cameraType}
+          />
+        ) : (
+          image && (
+            <Image
+              source={{ uri: image }}
+              style={{ width: 200, height: 200, alignSelf: "center" }}
+            />
+          )
         )}
 
         <View style={styles.tickLine}>
@@ -112,7 +129,7 @@ const Verification = () => {
               shadowOpacity: 0.3,
               shadowRadius: Spacing,
             }}
-            onPress={openCamera}
+            onPress={openSystemCamera}
           >
             <Text
               style={{
