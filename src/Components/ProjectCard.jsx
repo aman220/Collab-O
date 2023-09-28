@@ -1,5 +1,15 @@
-import React ,{useState, useRef ,useEffect }from "react";
-import { View, Text, Image, StyleSheet, TouchableOpacity ,  KeyboardAvoidingView,TextInput, } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  TextInput,
+  SafeAreaView,
+  Share,
+} from "react-native";
 import COLORS from "../const/colors";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Font from "../const/Font";
@@ -7,43 +17,45 @@ import FontSize from "../const/FontSize";
 import LottieView from "lottie-react-native";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { useNavigation } from "@react-navigation/native";
+import ViewShot from "react-native-view-shot";
+import * as Sharing from "expo-sharing";
 
 const LikeButton = ({ onPress, active }) => {
-    const [isLiked, setIsLiked] = useState(false);
-    const animationRef = useRef(null);
-    const isFirstrun = useRef(true);
-    const navigation = useNavigation();
-  
-    const handlePress = () => {
-      if (isFirstrun.current) {
-        if (isLiked) {
-          animationRef.current.play(68, 68);
-        } else {
-          animationRef.current.play(19, 19);
-        }
-        isFirstrun.current = false;
-      } else if (isLiked) {
-        animationRef.current.play(19, 50);
+  const [isLiked, setIsLiked] = useState(false);
+  const animationRef = useRef(null);
+  const isFirstrun = useRef(true);
+  const navigation = useNavigation();
+
+  const handlePress = () => {
+    if (isFirstrun.current) {
+      if (isLiked) {
+        animationRef.current.play(68, 68);
       } else {
-        animationRef.current.play(0, 19);
+        animationRef.current.play(19, 19);
       }
-      setIsLiked(!isLiked);
-      onPress();
-    };
-  
-    return (
-      <TouchableOpacity onPress={handlePress}>
-        <LottieView
-          ref={animationRef}
-          source={require("../assets/animation_llnrx4h4.json")}
-          style={styles.animation}
-          autoPlay={false}
-          loop={false}
-          progress={15 / 68}
-        />
-      </TouchableOpacity>
-    );
+      isFirstrun.current = false;
+    } else if (isLiked) {
+      animationRef.current.play(19, 50);
+    } else {
+      animationRef.current.play(0, 19);
+    }
+    setIsLiked(!isLiked);
+    onPress();
   };
+
+  return (
+    <TouchableOpacity onPress={handlePress}>
+      <LottieView
+        ref={animationRef}
+        source={require("../assets/animation_llnrx4h4.json")}
+        style={styles.animation}
+        autoPlay={false}
+        loop={false}
+        progress={15 / 68}
+      />
+    </TouchableOpacity>
+  );
+};
 
 const ProjectCard = (props) => {
   const {
@@ -65,9 +77,10 @@ const ProjectCard = (props) => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const rbSheetRef = useRef(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [comments, setComments] = useState([]);
+  const [comments, setComments] = useState("");
   const [commentCount, setCommentCount] = useState(0);
   const navigation = useNavigation();
+  const viewShotRef = useRef(null);
 
   const toggleDescription = () => {
     setShowFullDescription(!showFullDescription);
@@ -113,92 +126,135 @@ const ProjectCard = (props) => {
     setCommentCount(commentCount + 1);
     setIsSheetOpen(true);
   };
+
+  const handleShare = async () => {
+    try {
+      const uri = await viewShotRef.current.capture();
+      const isAvailable = await Sharing.isAvailableAsync();
+
+      if (isAvailable) {
+        await Sharing.shareAsync(uri);
+      } else {
+        console.log("Sharing is not available on this device");
+      }
+    } catch (error) {
+      console.error("Error sharing image:", error);
+    }
+  };
+
+  const handleLayout = (event) => {
+    // Get the height of the container when the layout changes
+    // const { height } = event.nativeEvent.layout;
+    // setContainerHeight(height);
+  };
+
   return (
-    <View style={styles.cardContainer}>
-      <Image source={{ uri: avtar }} style={styles.avatar} />
-      <View style={styles.container} >
-        <View style={styles.header}>
-          <View style={styles.userInfoContainer}>
-            <View style={styles.userInfo}>
-              {userName && <Text style={styles.userName}>{userName}</Text>}
-              {collegeName && (
-                <Text style={styles.collegeName}>{collegeName}</Text>
-              )}
-              {timeStamp && (
-                <Text style={styles.timeStamp}>
-                  {formatDateTime(timeStamp)}
-                </Text>
-              )}
-            </View>
+    <ViewShot ref={viewShotRef} options={{ format: "jpg", quality: 1.0 }}>
+      <SafeAreaView>
+        <View style={styles.cardContainer}>
+          <Image source={{ uri: avtar }} style={styles.avatar} />
+          <View style={styles.container}>
+            <View style={styles.header}>
+              <View style={styles.userInfoContainer}>
+                <View style={styles.userInfo}>
+                  {userName && <Text style={styles.userName}>{userName}</Text>}
+                  {collegeName && (
+                    <Text style={styles.collegeName}>{collegeName}</Text>
+                  )}
+                  {timeStamp && (
+                    <Text style={styles.timeStamp}>
+                      {formatDateTime(timeStamp)}
+                    </Text>
+                  )}
+                </View>
 
-            <View style={styles.whoamiContainer}>
-              {whoami && <Text style={styles.whoamitext} >{whoami}</Text>}
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.techStack}>
-          {techStack &&
-            techStack.map((tech, index) => (
-              <View key={index} style={styles.tech}>
-                <Text style={styles.techText}>{tech}</Text>
+                <View style={styles.whoamiContainer}>
+                  {whoami && <Text style={styles.whoamitext}>{whoami}</Text>}
+                </View>
               </View>
-            ))}
-        </View>
+            </View>
 
-        {title && <Text style={styles.title}onPress={() => navigation.navigate("projectexpand" ,{postid , navigation,userid,title,userName})}>{title}</Text>}
+            <View style={styles.techStack}>
+              {techStack &&
+                techStack.map((tech, index) => (
+                  <View key={index} style={styles.tech}>
+                    <Text style={styles.techText}>{tech}</Text>
+                  </View>
+                ))}
+            </View>
 
-        {description && (
-          <View>
-            <Text
-              numberOfLines={showFullDescription ? undefined : 2}
-              style={styles.description}
-            >
-              {description}
-            </Text>
-            {description.length > 100 && (
-              <TouchableOpacity onPress={toggleDescription}>
-                <Text style={styles.seeMore}>
-                  {showFullDescription ? "See Less" : "See More"}
-                </Text>
-              </TouchableOpacity>
+            {title && (
+              <Text
+                style={styles.title}
+                onPress={() =>
+                  navigation.navigate("projectexpand", {
+                    postid,
+                    navigation,
+                    userid,
+                    title,
+                    userName,
+                  })
+                }
+              >
+                {title}
+              </Text>
             )}
+
+            {description && (
+              <View>
+                <Text
+                  numberOfLines={showFullDescription ? undefined : 2}
+                  style={styles.description}
+                >
+                  {description}
+                </Text>
+                {description.length > 100 && (
+                  <TouchableOpacity onPress={toggleDescription}>
+                    <Text style={styles.seeMore}>
+                      {showFullDescription ? "See Less" : "See More"}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+            {proimage && ( // Check if image is not empty
+              <Image source={{ uri: proimage }} style={styles.projectImage} />
+            )}
+            <View style={styles.footerContainer}>
+              <View style={styles.footerIconsContainer}>
+                <TouchableOpacity style={styles.footerIcon}>
+                  <LikeButton onPress={handleLike} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.buttonCount}
+                  onPress={handleComment}
+                >
+                  <Icon name="comment-text-outline" size={20} />
+                  <Text>{commentCount}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.buttonCount}
+                  onPress={handleShare}
+                >
+                  <Icon name="share-outline" size={25} />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity style={styles.footerIcon}>
+                <Image
+                  source={require("../assets/collaboration.png")}
+                  style={{ width: 25, height: 25 }}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
-        )}
-        {proimage && ( // Check if image is not empty
-          <Image source={{ uri: proimage }} style={styles.projectImage} />
-        )}
-        <View style={styles.footerContainer}>
-          <View style={styles.footerIconsContainer}>
-            <TouchableOpacity style={styles.footerIcon}>
-               <LikeButton onPress={handleLike} />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.buttonCount}
-                 onPress={handleComment}>
-              <Icon name="comment-text-outline" size={20} />
-              <Text>2</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity style={styles.footerIcon} >
-            <Image
-              source={require("../assets/collaboration.png")}
-              style={{width:25,height:25}}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
 
-
-
-      {/* Render Image Component here  */}
-      <RBSheet
+          {/* Render Image Component here  */}
+          <RBSheet
             ref={rbSheetRef}
             height={740}
             openDuration={250}
             closeOnDragDown={true}
             onClose={handleSheetClose}
-            // onOpen={() => fetchComments(postId)}
             customStyles={{
               container: {
                 borderTopLeftRadius: 20,
@@ -219,31 +275,7 @@ const ProjectCard = (props) => {
                 Comments
               </Text>
               <View style={styles.sheetBody}>
-                {/* <FlatList
-                  data={comments}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => {
-                    return (
-                      <Comment
-                        username={item.username}
-                        avtar={item.avtar}
-                        content={item.Content}
-                        college={currentcollege}
-                        whoami={currentwhoami}
-                      />
-                    );
-                  }}
-                  refreshControl={
-                    <RefreshControl
-                      refreshing={refreshing}
-                      onRefresh={handleRefresh}
-                    />
-                  }
-                  ListEmptyComponent={
-                    <Text style={styles.noCommentText}>No comment found</Text>
-                  }
-                /> */}
-
+                {/* Comment content */}
                 <KeyboardAvoidingView
                   style={{ marginBottom: 20 }}
                   behavior="padding"
@@ -253,12 +285,12 @@ const ProjectCard = (props) => {
                       placeholder="Write a comment..."
                       style={styles.commentInput}
                       value={comments}
-                      onChangeText={(text) => setCommentText(text)}
+                      onChangeText={(text) => setComments(text)}
                     />
                     {/* Send button */}
                     <TouchableOpacity
                       style={styles.sendButton}
-                    //   onPress={handleCommentSubmit}
+                      //   onPress={handleCommentSubmit}
                     >
                       <Icon name="send" size={30} />
                     </TouchableOpacity>
@@ -267,7 +299,9 @@ const ProjectCard = (props) => {
               </View>
             </View>
           </RBSheet>
-    </View>
+        </View>
+      </SafeAreaView>
+    </ViewShot>
   );
 };
 
@@ -410,6 +444,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
+    marginRight: 10,
   },
   animation: {
     width: 45,

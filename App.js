@@ -31,6 +31,7 @@ import Mentorprofile from './src/Screens/MentorScreen/Mentorprofile';
 import ChatScreen from './src/Screens/Chatting/ChatScreen';
 import ChattingScreen from './src/Screens/ChattingScreen';
 import GeneralChatScreen from './src/Screens/Discussion/General/GeneralChatScreen';
+import Revelent from './src/Screens/ExpandScreens/Revelent';
 
 const Stack = createStackNavigator();
 
@@ -169,6 +170,11 @@ export default function App() {
         <Stack.Screen
           name="generalChatScreen"
           component={GeneralChatScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="revelent"
+          component={Revelent}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

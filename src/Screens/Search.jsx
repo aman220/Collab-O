@@ -8,7 +8,6 @@ import {
   Text,
   StyleSheet,
   SafeAreaView,
-  FlatList,
 } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import FeatherIcon from "react-native-vector-icons/Feather";
@@ -23,11 +22,18 @@ const Search = ({ username, useravtar }) => {
   const [focusAnim] = useState(new Animated.Value(1));
   const [projects, setProjects] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
+  const [filteredProjects, setFilteredProjects] = useState([]);
   const [isSkeletonLoading, setSkeletonIsLoading] = useState(true);
   const [showProjectTabs, setShowProjectTabs] = useState(false);
+  const [selectedFilter, setSelectedFilter] = useState(null);
+  const [technologyCounts, setTechnologyCounts] = useState({});
 
   const handleSearch = () => {
-    console.log("Searching for:", searchText);
+    // Filter the projects based on the search query
+    const filtered = projects.filter((project) =>
+      project.title.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setFilteredProjects(filtered);
   };
 
   const handleFocus = () => {
@@ -51,25 +57,64 @@ const Search = ({ username, useravtar }) => {
       setSelectedItems(
         selectedItems.filter((selectedItem) => selectedItem !== item)
       );
+      setSelectedFilter(null); // Clear the selected filter when a filter is deselected
     } else {
-      setSelectedItems([...selectedItems, item]);
+      setSelectedItems([item]);
+      setSelectedFilter(item);
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const projectCollection = firestore.collection("projects");
+        const snapshot = await projectCollection.get();
+  
+        const projectData = [];
+        snapshot.forEach((doc) => {
+          const project = {
+            title: doc.data().title,
+            technology: doc.data().technologies || [], // Default to an empty array
+          };
+          projectData.push(project);
+        });
+        setProjects(projectData);
+        setSkeletonIsLoading(false);
+  
+        // Calculate the counts for each technology
+        const counts = projectData.reduce((acc, project) => {
+          const technologies = project.technology || ['Unknown']; // Use 'Unknown' if no technology is specified
+          technologies.forEach((technology) => {
+            acc[technology] = (acc[technology] || 0) + 1;
+          });
+          return acc;
+        }, {});
+  
+        setTechnologyCounts(counts);
+      } catch (error) {
+        console.error("Error fetching projects: ", error);
+        // Handle the error appropriately in your UI (e.g., show an error message)
+      }
+    };
+  
+    fetchData(); // Call the fetchData function to fetch and process the data
+  }, []);
+  
+
   return (
     <SafeAreaView style={{ backgroundColor: COLORS.white }}>
-      <View style={style.header}>
+      <View style={styles.header}>
         <Animated.View
-          style={[style.searchSection, { transform: [{ scale: focusAnim }] }]}
+          style={[styles.searchSection, { transform: [{ scale: focusAnim }] }]}
         >
           <Icon
-            style={style.searchIcon}
+            style={styles.searchIcon}
             name="search"
             size={20}
             color={COLORS.grey}
           />
           <TextInput
-            style={style.searchInput}
+            style={styles.searchInput}
             placeholder="Search..."
             placeholderTextColor={COLORS.grey}
             value={searchText}
@@ -89,40 +134,46 @@ const Search = ({ username, useravtar }) => {
         </Animated.View>
       </View>
       <View>
-
-      
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={style.selectableItems}
-      >
-        <View style={style.selectableItemsList}>
-          {["React Native: 1", "Android: 20", "MERN: 23", "Java: 40", "Python: 54", "Django: 90"].map(
-            (item) => (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.selectableItems}
+        >
+          <View style={styles.selectableItemsList}>
+            {[
+              "React Native",
+              "Android",
+              "MERN",
+              "Java",
+              "Python",
+              "Django",
+            ].map((technology) => (
               <TouchableOpacity
-                key={item}
+                key={technology}
                 style={[
-                  style.selectableItem,
-                  selectedItems.includes(item) && style.selectedItem,
+                  styles.selectableItem,
+                  selectedItems.includes(technology) && styles.selectedItem,
                 ]}
-                onPress={() => toggleItemSelection(item)}
+                onPress={() => toggleItemSelection(technology)}
               >
-                <Text style={style.selectableItemText}>{item}</Text>
+                <Text style={styles.selectableItemText}>
+                  {technology}: {technologyCounts[technology] || 0}
+                </Text>
               </TouchableOpacity>
-            )
-          )}
-        </View>
-
-        
-      </ScrollView>
-      {/* Selection section */}
+            ))}
+          </View>
+        </ScrollView>
+        {/* Selection section */}
       </View>
-      <ProjectTabs />
+      <ProjectTabs
+        selectedFilter={selectedFilter}
+        projects={filteredProjects}
+      />
     </SafeAreaView>
   );
 };
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
   header: {
     paddingTop: 20,
     paddingLeft: 20,

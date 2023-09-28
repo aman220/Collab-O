@@ -5,26 +5,30 @@ import ProjectCard from "../../Components/ProjectCard";
 import ProjectSkeleton from "../Skeleton/ProjectSkeleton";
 import COLORS from "../../const/colors";
 
-const Project = () => {
+const Project = ({selectedFilter , filteredProjects}) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [isSkeletonLoading, setSkeletonIsLoading] = useState(true);
   const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    const unsubscribe = firestore
-      .collection("projects")
-      .onSnapshot((snapshot) => {
-        const projectsArray = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setProjects(projectsArray);
-
-        setSkeletonIsLoading(false);
-      });
+    const unsubscribe = firestore.collection("projects").onSnapshot((snapshot) => {
+      const projectsArray = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+  
+      // Filter projects based on the selected filter
+      const filteredProjects = selectedFilter
+        ? projectsArray.filter((project) => project.technologies.includes(selectedFilter))
+        : projectsArray;
+  
+      setProjects(filteredProjects);
+      setSkeletonIsLoading(false);
+    });
+  
     return () => unsubscribe();
-  }, []);
-
+  }, [selectedFilter]); // Add selectedFilter to the dependency array
+  
   const toggleItemSelection = (item) => {
     if (selectedItems.includes(item)) {
       setSelectedItems(selectedItems.filter((selectedItem) => selectedItem !== item));
@@ -58,7 +62,7 @@ const Project = () => {
           )
         }
         showsVerticalScrollIndicator={false}
-        style={styles.projectCardsContainer} // Use styles instead of style
+        style={styles.projectCardsContainer} 
       />
     </SafeAreaView>
   );

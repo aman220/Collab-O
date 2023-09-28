@@ -246,6 +246,9 @@ class ProjectExpandScreen extends Component {
                 </Text>
                 <Icon style={{backgroundColor:COLORS.lightPrimary, borderRadius:20,marginBottom:5,}} name="information-variant" size={25} onPress={() => navigation.navigate("mentorprofile")}/>
               </View>
+              <TouchableOpacity style={styles.teamTag} onPress={() => navigation.navigate("revelent",projectData.description,projectData.title)}>
+                <Text style={styles.teamText}>Revelent Project {projectData.teamsize}</Text>
+              </TouchableOpacity>
               <TouchableOpacity
                 style={{
                   flexDirection: "row",

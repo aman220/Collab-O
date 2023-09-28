@@ -5,7 +5,7 @@ import COLORS from "./const/colors";
 import Project from "./Screens/Project_Reserach/Projects";
 import Reserach from "./Screens/Project_Reserach/Reserach";
 
-const TabButton = ({ label, isActive, onPress }) => (
+const TabButton = ({ label, isActive, onPress  }) => (
   <TouchableOpacity
     style={[styles.button, isActive && styles.activeButton]}
     onPress={onPress}
@@ -18,7 +18,7 @@ const TabButton = ({ label, isActive, onPress }) => (
 
 const Tab = createBottomTabNavigator();
 
-const ProjectTabs = () => {
+const ProjectTabs = ({ selectedFilter ,filteredProjects}) => {
   
   const [activeTab, setActiveTab] = useState("campus");
   const handleTabPress = (tabName) => {
@@ -42,7 +42,7 @@ const ProjectTabs = () => {
         </View>
       </View>
       <View style={styles.tabContentContainer}>
-        {activeTab === "campus" && <Project/>}
+        {activeTab === "campus" && <Project selectedFilter={selectedFilter } searchprojects={filteredProjects}/>}
         {activeTab === "global" && <Reserach/>}
       </View>
     </View>

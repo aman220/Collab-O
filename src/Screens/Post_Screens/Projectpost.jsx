@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   TextInput,
   TouchableOpacity,
@@ -25,6 +25,8 @@ import { MultipleSelectList } from "react-native-dropdown-select-list";
 import { firestore, storage } from "../../Firebase/firebase";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { SelectList } from "react-native-dropdown-select-list";
+import axios from "axios";
 
 const Projectpost = () => {
   const [projectTitle, setProjectTitle] = useState("");
@@ -48,8 +50,9 @@ const Projectpost = () => {
   const [collegeOptions, setCollegeOptions] = React.useState([]);
   const [newTextInput, setNewTextInput] = useState(""); // Initialize with an empty string
   const [newTextCharacterCount, setNewTextCharacterCount] = useState(0);
+  const [repos, setRepos] = useState([]);
+
   // Step 2: Create a function to handle changes to the new text input
-  
 
   const route = useRoute();
   const { useravtar, username, whoami, usercollege } = route.params;
@@ -73,7 +76,6 @@ const Projectpost = () => {
   const maxTitleLength = 100;
   const maxDescriptionLength = 300;
   const maxCharacterLength = 100;
-  
 
   const handleTitleChange = (text) => {
     if (text.length <= maxTitleLength) {
@@ -144,6 +146,8 @@ const Projectpost = () => {
     { key: "33", value: "Kubernetes", disabled: false },
     { key: "34", value: "Jenkins", disabled: false },
     { key: "35", value: "Travis CI", disabled: false },
+    { key: "36", value: "Android", disabled: false },
+    { key: "3 s-", value: "Android", disabled: false },
   ];
 
   React.useEffect(() => {
@@ -245,26 +249,29 @@ const Projectpost = () => {
         .doc(uid)
         .collection("userdata")
         .doc("user_projects");
-  
+
       // Retrieve the current data from the document
       const snapshot = await newRef.get();
       const userData = snapshot.data() || {}; // Initialize as an empty object if data is undefined
       const currentPosts = userData.projects || [];
-  
+
       // Append the new ID to the array
       const updatedPosts = [...currentPosts, newProjectRef.id];
-  
+
       // Update the document with the modified array
       try {
-        await newRef.set({
-          projects: updatedPosts, // Set or update the 'projects' field in the document
-        }, { merge: true }); // Merge to keep existing data in the document
-  
+        await newRef.set(
+          {
+            projects: updatedPosts, // Set or update the 'projects' field in the document
+          },
+          { merge: true }
+        ); // Merge to keep existing data in the document
+
         console.log("Project ID added to the array successfully!");
       } catch (error) {
         console.error("Error adding project ID to the array:", error);
       }
-
+      await createGitHubRepo();
       // Reset form fields and navigate to another screen
       setProjectTitle("");
       setProjectDescription("");
@@ -276,6 +283,74 @@ const Projectpost = () => {
     } catch (error) {
       console.error("Error creating project post: ", error);
     }
+  };
+
+  const fetchGitHubRepos = async () => {
+    try {
+      const response = await axios.get("https://api.github.com/user/repos", {
+        headers: {
+          Authorization: `Bearer ${"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"}`,
+        },
+      });
+
+      // Map the 'full_name' property from the fetched GitHub repositories
+      const reposWithFullNames = response.data.map((repo) => ({
+        value: repo.full_name, // Use 'full_name' as the value
+        label: repo.url, // Use 'full_name' as the label
+      }));
+
+      // Set the mapped repositories as the 'collegeOptions' state
+      setCollegeOptions(reposWithFullNames);
+
+      console.log(reposWithFullNames);
+    } catch (error) {
+      console.error("Error fetching GitHub repositories:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchGitHubRepos();
+  }, []);
+
+  const createGitHubRepo = async () => {
+    try {
+      const githubPAT = "YOUR_GITHUB_PAT"; // Replace with your GitHub PAT
+      const response = await axios.post(
+        "https://api.github.com/user/repos",
+        {
+          name: projectTitle,
+          description: projectDescription,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${"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"}`,
+          },
+        }
+      );
+
+      // Check if the repository was successfully created
+      if (response.status === 201) {
+        showToast("success", "GitHub repository created successfully!");
+      } else {
+        showToast("error", "Failed to create GitHub repository.");
+      }
+    } catch (error) {
+      console.error("Error creating GitHub repository:", error);
+      showToast("error", "Failed to create GitHub repository.");
+    }
+
+    const handlePostButtonPress = async () => {
+      try {
+        // ... (your existing code to create a Firestore document)
+
+        // After creating the Firestore document, create the GitHub repository
+       
+
+        // ... (reset form fields and navigate to another screen)
+      } catch (error) {
+        console.error("Error creating project post: ", error);
+      }
+    };
   };
 
   return (
@@ -347,8 +422,8 @@ const Projectpost = () => {
           {descriptionCharacterCount}/{maxDescriptionLength} characters
         </Text>
 
-       {/* Add the new text input component */}
-       <TextInput
+        {/* Add the new text input component */}
+        <TextInput
           placeholder="Specific Request"
           placeholderTextColor={COLORS.dark}
           style={[
@@ -363,7 +438,7 @@ const Projectpost = () => {
           value={newTextInput}
           onChangeText={handleNewTextInputChange}
         />
-        
+
         {/* Display the character count */}
         <Text style={styles.characterCount}>
           {newTextCharacterCount}/{maxCharacterLength} characters
@@ -480,16 +555,25 @@ const Projectpost = () => {
             <Text style={styles.modalText}>
               Paste Your Github Project Link Here
             </Text>
-            <TextInput
+
+            <SelectList
+              setSelected={(val) => setProjectLink(val)}
+              data={collegeOptions} // Use the collegeOptions array as the data
+              save="value"
+              value={projectLink}
+            />
+
+            {/* <TextInput
               placeholder="Project Link"
               placeholderTextColor={COLORS.dark}
               style={[
                 styles.input,
                 { width: "100%" }, // Adjust the width as needed
               ]}
-              onChangeText={setProjectLink}
-              value={projectLink}
-            />
+              onChangeText={}
+              
+            /> */}
+
             <TouchableOpacity
               style={styles.modalButton}
               onPress={closegithubModal}
