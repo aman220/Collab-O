@@ -68,6 +68,7 @@ const U_Posts = ({ userId }) => {
               image={post.imageUrl}
               college={post.college}
               whoami={post.whoami}
+              desc = {post.desc}
             />
           ))}
         </View>

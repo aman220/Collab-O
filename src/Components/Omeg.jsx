@@ -107,6 +107,7 @@ const Omeg = ({
   whoami,
   isverified,
   college,
+  desc
 }) => {
   const [likeCount, setLikeCount] = useState(0);
   const [commentCount, setCommentCount] = useState(0);
@@ -119,7 +120,7 @@ const Omeg = ({
   const [commentcontent, setCommentText] = useState("");
   const [currentavatar, setAvatar] = useState(null);
   const [currentusername, setUsername] = useState(null);
-  const [currentcollege, setCollege] = useState(null);
+  const [currentcollege, setCollege] = useState("");
   const [currentwhoami, setwhoami] = useState(null);
   const navigation = useNavigation();
   const viewShotRef = useRef(null);
@@ -136,6 +137,7 @@ const Omeg = ({
           setUsername(userData.fullName);
           setCollege(userData.college);
           setwhoami(userData.whoami);
+
           console.log(userData);
         } else {
           console.log("User data not found in Firestore");
@@ -319,7 +321,7 @@ const Omeg = ({
             </View>
 
             <Text style={styles.collegestyle}>
-              {college.length > 30 ? `${college.substring(0, 40)}...` : college}
+              {desc.length > 30 ? `${desc.substring(0, 30)}...` : desc}
             </Text>
           </View>
           <View style={styles.whoamiContainer}>

@@ -62,7 +62,7 @@ class Profile extends Component {
 
     // Now you can extract userId from route.params
     const { userId } = route.params;
-   
+
     const { userData } = this.state;
 
     const VerifiedIcon = () => (
@@ -188,13 +188,26 @@ class Profile extends Component {
                 {userData.isverified == true && <VerifiedIcon />}
               </Text>
               <Text
-                style={{  color: COLORS.black,
+                style={{
+                  color: COLORS.black,
                   fontSize: 12,
                   fontFamily: Font["poppins-regular"],
                   marginTop: 1,
-                  paddingLeft:10}}
+                  paddingLeft: 10,
+                }}
               >
                 {userData.college}
+              </Text>
+              <Text
+                style={{
+                  color: COLORS.black,
+                  fontSize: 15,
+                  fontFamily: Font["poppins-regular"],
+                  marginTop: 1,
+                  paddingLeft: 10,
+                }}
+              >
+                {userData.desc}
               </Text>
             </View>
           )}
@@ -216,9 +229,7 @@ class Profile extends Component {
             </View>
           )}
 
-         
-          <UserTabs userId={userId}/>
-        
+          <UserTabs userId={userId} />
 
           <View style={{ height: 1000 }} />
         </ScrollView>

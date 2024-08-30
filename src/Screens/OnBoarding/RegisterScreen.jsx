@@ -62,10 +62,10 @@ const RegisterScreen = () => {
       await newUserRef.set({
         email: email,
         isverified: false,
-        whoami: "null",
+        whoami: "",
         FollowersCount: 0,
         FollowingCount: 0,
-        college:"null",
+        college:"",
         PostsCount: 0,
         createdAt: currentDate.toISOString(),
       });

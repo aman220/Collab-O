@@ -90,20 +90,21 @@ const Home = React.memo(() => {
   }, []);
 
   useEffect(() => {
-    if (userData && userData.whoami !== "null") {
+    if (userData && userData.whoami !== "") {
       rbSheetRef.current.close();
     } else {
       rbSheetRef.current.open();
     }
   }, [userData]);
 
-  const handleOptionSelect = async (selectedCollege) => {
+  const handleOptionSelect = async (selected) => {
+    console.log(selected)
     try {
       const uid = await AsyncStorage.getItem("@userUid");
       if (uid != null) {
         const userRef = firestore.collection("users").doc(uid);
-        await userRef.update({ whoami: selectedCollege });
-        setUserData((prevUserData) => ({ ...prevUserData, whoami: selectedCollege }));
+        await userRef.update({ whoami: selected });
+        setUserData((prevUserData) => ({ ...prevUserData, whoami: selected }));
         rbSheetRef.current.close();
       }
     } catch (error) {
@@ -127,7 +128,7 @@ const Home = React.memo(() => {
 
   useEffect(() => {
     if (userData) {
-      if (userData.whoami !== "null" && userData.college === "null") {
+      if (userData.whoami !== "" && userData.college === "") {
         // If whoami is not null and college is "null", open the modal
         openCollegeModal();
       }
@@ -175,7 +176,7 @@ const Home = React.memo(() => {
 
   const fetchCollegeOptions = async () => {
     const jsonUrl =
-      "https://firebasestorage.googleapis.com/v0/b/collab-o-452a2.appspot.com/o/colleges.json?alt=media&token=ede10885-d1d3-48fe-bebe-6dfe30fb61b5";
+      "https://raw.githubusercontent.com/VarthanV/Indian-Colleges-List/master/colleges.json";
   
     try {
       // Check if the data is cached in AsyncStorage
@@ -189,6 +190,7 @@ const Home = React.memo(() => {
         // If not cached, fetch from the URL
         const response = await fetch(jsonUrl);
         const data = await response.json();
+        
   
         // Convert all the data to options
         const options = data.map((college) => ({
@@ -281,6 +283,7 @@ const Home = React.memo(() => {
                   whoami={item.whoami}
                   isverified={item.isverified}
                   college={item.college}
+                  desc = {item.desc}
                 />
               );
             }}
@@ -342,7 +345,7 @@ const Home = React.memo(() => {
                     Selected === 1 && { color: "#000" },
                   ]}
                 >
-                  Facuty
+                  Alumni 
                 </Text>
               </TouchableOpacity>
 
@@ -387,7 +390,7 @@ const Home = React.memo(() => {
               shadowRadius: Spacing,
             }}
             onPress={() =>
-              handleOptionSelect(["Alumani", "Faculty", "Student"][Selected])
+              handleOptionSelect(["Alumni","Alumni", "Student"][Selected])
             }
           >
             <Text

@@ -28,7 +28,7 @@ const AddProfile = ({ route }) => {
   const [avatar, setAvatar] = useState(null);
   const [fullNameValue, setFullNameValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { userId } = route.params; // Extract userId from navigation parameters
+  const { userId } = route.params; 
 
   const handleImagePicker = async () => {
     try {
@@ -70,7 +70,7 @@ const AddProfile = ({ route }) => {
 
             // Get the image URL from Firebase Storage
             const imageUrl = await ref.getDownloadURL();
-            setAvatar(imageUrl); // Update the state with the image URL
+            setAvatar(imageUrl); 
           }
         } catch (error) {
           console.log("ImagePicker Error: ", error);
@@ -95,11 +95,11 @@ const AddProfile = ({ route }) => {
       const usersCollectionRef = firestore.collection("users");
       await usersCollectionRef.doc(userId).update({
         fullName: fullNameValue,
-        avatar: avatar, // Save the image URL to the 'avatar' field in Firestore
+        avatar: avatar, 
       });
 
       showToast("success", "Profile setup successful");
-      navigation.navigate("Login"); // Navigate to the home screen after setup
+      navigation.navigate("Login"); 
     } catch (error) {
       console.error("Error updating profile:", error);
     }
