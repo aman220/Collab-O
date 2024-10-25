@@ -32,6 +32,7 @@ import ChatScreen from './src/Screens/Chatting/ChatScreen';
 import ChattingScreen from './src/Screens/ChattingScreen';
 import GeneralChatScreen from './src/Screens/Discussion/General/GeneralChatScreen';
 import Revelent from './src/Screens/ExpandScreens/Revelent';
+import SearchStudent from './src/Screens/SearchFriend';
 
 const Stack = createStackNavigator();
 
@@ -175,6 +176,11 @@ export default function App() {
         <Stack.Screen
           name="revelent"
           component={Revelent}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="searchfriend"
+          component={SearchStudent}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

@@ -45,6 +45,8 @@ const Home = React.memo(() => {
   const [isCollegeModalVisible, setIsCollegeModalVisible] = useState(false);
   const [collegeData, setSelectedCollege] = React.useState([]);
   const [collegeOptions, setCollegeOptions] = React.useState([]);
+  // const [college , setcollege] = useState(null);
+  
 
   const openCollegeModal = () => {
     setIsCollegeModalVisible(true);
@@ -66,6 +68,7 @@ const Home = React.memo(() => {
           if (docSnapshot.exists) {
             const userData = docSnapshot.data();
             setUserData(userData);
+            AsyncStorage.setItem("college" , userData.college);
             setIsLoading(false);
           } else {
             showToast("error", "UserData Not Found!");
@@ -139,21 +142,50 @@ const Home = React.memo(() => {
   const fetchPosts = async () => {
     try {
       setSekeletonIsLoading(true);
+      
+      // Reference to the posts collection
       const postsRef = firestore.collection("posts");
-      const unsubscribe = postsRef.onSnapshot((snapshot) => {
+  
+      // Get the college from AsyncStorage
+      const college = await AsyncStorage.getItem("college");
+  
+      // Check if college is null or undefined
+      if (!college) {
+        setTimeout(() => {
+          
+        }, 3000);
+        setSekeletonIsLoading(false);
+        return;
+      }
+  
+      // Query to filter posts with collegeName
+      const query = postsRef.where("college", "==", college);
+      
+      // Listen for real-time updates on the filtered query
+      const unsubscribe = query.onSnapshot((snapshot) => {
         const postsData = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+        
         setPosts(postsData);
         setRefreshing(false); // Finish refreshing
         setSekeletonIsLoading(false);
+      }, (error) => {
+        console.error("Error listening for posts:", error);
+        setSekeletonIsLoading(false);
       });
-      return unsubscribe;
+  
+      // Cleanup function
+      return () => unsubscribe();
+  
     } catch (error) {
       console.error("Error fetching posts:", error);
+      setSekeletonIsLoading(false);
     }
   };
+  
+  
 
   useEffect(() => {
     fetchUserData();
@@ -174,44 +206,29 @@ const Home = React.memo(() => {
   };
 
 
-  const fetchCollegeOptions = async () => {
-    const jsonUrl =
-      "https://raw.githubusercontent.com/VarthanV/Indian-Colleges-List/master/colleges.json";
-  
-    try {
-      // Check if the data is cached in AsyncStorage
-      const cachedData = await AsyncStorage.getItem('collegeOptions');
-  
-      if (cachedData) {
-        // If data is cached, use it
-        const options = JSON.parse(cachedData);
-        setCollegeOptions(options);
-      } else {
-        // If not cached, fetch from the URL
-        const response = await fetch(jsonUrl);
-        const data = await response.json();
-        
-  
-        // Convert all the data to options
-        const options = data.map((college) => ({
-          key: college._id,
-          value: college.college,
-        }));
-  
-        // Cache the data in AsyncStorage
-        await AsyncStorage.setItem('collegeOptions', JSON.stringify(options));
-  
-        setCollegeOptions(options);
+ 
+  useEffect(() => {
+    const fetchCollegeOptions = async () => {
+      try {
+        const adminRef = firestore.collection('admins');
+        const unsubscribe = adminRef.onSnapshot((snapshot) => {
+          const collegeData = snapshot.docs.map((doc) => ({
+            key: doc.id,
+            value: doc.data().name,  // Assuming `name` is the field you want to display
+          }));
+          setCollegeOptions(collegeData);
+        });
+        return unsubscribe;
+      } catch (error) {
+        console.error("Error fetching college data:", error);
       }
-    } catch (error) {
-      console.error("Error fetching JSON data:", error);
-    }
-  };
-  
-  
-  React.useEffect(() => {
+    };
+
     fetchCollegeOptions();
   }, []);
+
+  
+
   
 
 
@@ -418,7 +435,7 @@ const Home = React.memo(() => {
             <View style={{ marginTop: 20 }}>
               <SelectList
                 setSelected={(val) => setSelectedCollege(val)}
-                data={collegeOptions} // Use the collegeOptions array as the data
+                data={collegeOptions} 
                 save="value"
               />
             </View>

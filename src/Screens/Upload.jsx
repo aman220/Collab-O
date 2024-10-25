@@ -46,6 +46,7 @@ const Upload = () => {
   const [whoami, setUserwhoami] = useState("");
   const [isverified, setUserIsVerified] = useState(false);
   const [usercollege, setUsercollege] = useState("");
+  const [ profileDescription , setProfileDescription] = useState("");
 
 
   useEffect(() => {
@@ -77,6 +78,7 @@ const Upload = () => {
           setUserwhoami(userData.whoami)
           setUserIsVerified(userData.isverified);
           setUsercollege(userData.college);
+          setProfileDescription(userData.desc);
         } else {
           console.log("User data not found!");
         }
@@ -216,7 +218,7 @@ const Upload = () => {
       const newUserRef = usersCollectionRef.doc();
       const currentDate = new Date();
       await newUserRef.set({
-        userId: uid, // Update this with your user ID logic
+        userId: uid, 
         text: postText,
         imageUrl: imageUrl,
         videoUrl : VideoUrl,
@@ -226,10 +228,10 @@ const Upload = () => {
         whoami : whoami,
         isverified:isverified,
         college:usercollege,
+        desc : profileDescription
       });
 
-      // Update the user's activity collection
-      const userActivityRef = firestore.collection("users");
+      // Update the user's activity collection    ``````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````      const userActivityRef = firestore.collection("users");
       const newRef = userActivityRef
         .doc(uid)
         .collection("userdata")

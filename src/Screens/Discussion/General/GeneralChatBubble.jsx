@@ -4,32 +4,21 @@ import COLORS from "../../../const/colors";
 import Font from "../../../const/Font";
 
 const GeneralChatBubble = ({ content, type, timestamp }) => {
-  
-
   return (
-    <View
-      style={[
-        styles.bubbleWrapper,
-      styles.leftAlign ,
-      ]}
-    >
-      
-        <Image
-          source={require("../../../assets/photo.jpg")}
-          style={styles.profileImage}
-        />
-      
-      <View
-        style={[styles.container,  styles.sender]}
-      >
+    <View style={[styles.bubbleWrapper, styles.leftAlign]}>
+      <Image
+        source={require("../../../assets/photo.jpg")}
+        style={styles.profileImage}
+      />
+
+      <View style={[styles.container, styles.sender]}>
         <Text style={styles.content}>{content}</Text>
-        <Text style={styles.timestamp}>{timestamp}</Text> 
+        <Text style={styles.timestamp}>{timestamp}</Text>
       </View>
-      
-        <View style={styles.receiverTail} />
-     
-        <View style={styles.senderTail} />
-      
+
+      <View style={styles.receiverTail} />
+
+      <View style={styles.senderTail} />
     </View>
   );
 };

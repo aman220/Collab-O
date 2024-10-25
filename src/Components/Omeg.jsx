@@ -320,9 +320,11 @@ const Omeg = ({
               {isverified == true && <VerifiedIcon />}
             </View>
 
-            <Text style={styles.collegestyle}>
-              {desc.length > 30 ? `${desc.substring(0, 30)}...` : desc}
-            </Text>
+            {desc && (
+        <Text style={styles.collegestyle}>
+          {desc.length > 30 ? `${desc.substring(0, 30)}...` : desc}
+        </Text>
+      )}
           </View>
           <View style={styles.whoamiContainer}>
             <Text style={styles.whoamitext}>{whoami}</Text>

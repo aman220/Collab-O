@@ -9,6 +9,7 @@ import Upload from './Screens/Upload';
 import { useNavigation } from "@react-navigation/native";
 import Account from './Screens/AccountSection/Account';
 import ChatScreen from './Screens/Chatting/ChatScreen';
+import SearchStudent from './Screens/SearchFriend';
 
 const Tab = createBottomTabNavigator();
 
@@ -49,6 +50,17 @@ const MainTabs = () => {
           tabBarColor: '#009387',
           tabBarIcon: ({ color }) => (
             <Icon name="search-outline" color={color} size={26} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Searchfriend"
+        component={SearchStudent}
+        options={{
+          tabBarLabel: 'Search',
+          tabBarColor: '#009387',
+          tabBarIcon: ({ color }) => (
+            <Icon name="person-outline" color={color} size={26} />
           ),
         }}
       />

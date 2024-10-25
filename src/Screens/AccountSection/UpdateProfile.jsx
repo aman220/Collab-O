@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -11,7 +11,7 @@ import {
   Modal,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { firestore, storage } from "../../Firebase/firebase"; // Update the Firebase import
+import { firestore, storage } from "../../Firebase/firebase";
 import { useNavigation } from "@react-navigation/native";
 import Spacing from "../../const/Spacing";
 import FontSize from "../../const/FontSize";
@@ -22,15 +22,34 @@ import showToast from "../../const/Toast";
 import { Toast } from "react-native-toast-message/lib/src/Toast";
 import { PermissionsAndroid } from "react-native";
 
-
 const UpdateProfile = ({ route }) => {
   const navigation = useNavigation();
   const [avatar, setAvatar] = useState(null);
-  const [setimage, setImageAvatar] = useState(null);
   const [fullNameValue, setFullNameValue] = useState("");
+  const [profileDescription, setProfileDescription] = useState(""); // New state for profile description
   const [isLoading, setIsLoading] = useState(false);
-  const { userId } = route.params; // Extract userId from navigation parameters
-  console.log(userId)
+  const { userId } = route.params;
+
+  // Fetch existing profile data when the component mounts
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const userDoc = await firestore.collection("users").doc(userId).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          setFullNameValue(userData.fullName || "");
+          setProfileDescription(userData.desc || "");
+          setAvatar(userData.avatar || null);
+        } else {
+          console.log("No such document!");
+        }
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
+      }
+    };
+
+    fetchProfileData();
+  }, [userId]);
 
   const handleImagePicker = async () => {
     try {
@@ -45,62 +64,47 @@ const UpdateProfile = ({ route }) => {
         cameraPermission === PermissionsAndroid.RESULTS.GRANTED &&
         photoPermission === PermissionsAndroid.RESULTS.GRANTED
       ) {
-        const options = {
-          title: "Select Avatar",
-          storageOptions: {
-            skipBackup: true,
-            path: "images",
-          },
-        };
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 1,
+        });
 
-        try {
-          const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 1,
-          });
-
-          if (!result.canceled) {
-            setIsLoading(true);
-            // Upload the image to Firebase Storage
-            const response = await fetch(result.uri);
-            const blob = await response.blob();
-            const imageName = `avatars/${userId}_${Date.now()}.jpg`; // Change 'avatars' to your desired storage path
-            const ref = storage.ref().child(imageName);
-            await ref.put(blob);
-
-            // Get the image URL from Firebase Storage
-            const imageUrl = await ref.getDownloadURL();
-            setAvatar(imageUrl); // Update the state with the image URL
-          }
-        } catch (error) {
-          console.log("ImagePicker Error: ", error);
-        }finally {
-          setIsLoading(false); 
+        if (!result.canceled) {
+          setIsLoading(true);
+          const response = await fetch(result.uri);
+          const blob = await response.blob();
+          const imageName = `avatars/${userId}_${Date.now()}.jpg`;
+          const ref = storage.ref().child(imageName);
+          await ref.put(blob);
+          const imageUrl = await ref.getDownloadURL();
+          setAvatar(imageUrl);
         }
       } else {
         console.log("Camera and photo permissions denied");
       }
     } catch (err) {
       console.warn(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleProceed = async () => {
-    if (!fullNameValue) {
-      showToast("error", "Please enter your full name");
-      return;
+    if (!fullNameValue || !profileDescription) {
+      showToast("error", "Please enter your full name and profile description");
+      return;22
     }
     try {
-      // Update the user profile in Firestore with the full name and image URL
       const usersCollectionRef = firestore.collection("users");
       await usersCollectionRef.doc(userId).update({
         fullName: fullNameValue,
-         // Save the image URL to the 'avatar' field in Firestore
+        desc: profileDescription, 
+        avatar: avatar, 
       });
-      showToast("success", "Profile setup successful");
-      navigation.navigate("Account"); // Navigate to the home screen after setup
+      showToast("success", "Profile updated successfully");
+      navigation.navigate("Account");
     } catch (error) {
       console.error("Error updating profile:", error);
     }
@@ -108,21 +112,21 @@ const UpdateProfile = ({ route }) => {
 
   return (
     <SafeAreaView style={{ backgroundColor: COLORS.white, flex: 1 }}>
-       {isLoading && (
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isLoading}
-        onRequestClose={() => {}}
-      >
-        <View style={styles.loaderContainer}>
-          <View style={styles.loaderContent}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={styles.loaderText}>Updating...</Text>
-            
+      {isLoading && (
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isLoading}
+          onRequestClose={() => {}}
+        >
+          <View style={styles.loaderContainer}>
+            <View style={styles.loaderContent}>
+              <ActivityIndicator size="large" color={COLORS.primary} />
+              <Text style={styles.loaderText}>Updating...</Text>
+            </View>
           </View>
-        </View>
-      </Modal>)}
+        </Modal>
+      )}
       <Toast />
       <View style={styles.header}>
         <View style={{ alignItems: "center" }}>
@@ -144,7 +148,7 @@ const UpdateProfile = ({ route }) => {
               textAlign: "center",
             }}
           >
-            Update Your Good Name & Your Beautiful Profile Picture & email
+            Update Your Name, Profile Picture & Description
           </Text>
         </View>
         <View
@@ -179,6 +183,20 @@ const UpdateProfile = ({ route }) => {
               }}
               value={fullNameValue}
               onChangeText={setFullNameValue}
+            />
+            <TextInput
+              placeholder="Profile Description"
+              placeholderTextColor={COLORS.dark}
+              style={{
+                fontFamily: Font["poppins-regular"],
+                fontSize: FontSize.small,
+                padding: Spacing * 2,
+                backgroundColor: COLORS.lightPrimary,
+                borderRadius: Spacing,
+                marginTop: Spacing * 2,
+              }}
+              value={profileDescription}
+              onChangeText={setProfileDescription}
             />
           </View>
         </View>
